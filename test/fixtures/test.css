@@ -1,0 +1,28 @@
+html,body {
+	margin: 0;
+	padding: 0;
+}
+
+@font-face {
+	font-family: 'Glyphicons Halflings';
+}
+
+.my.awesome.selecror {
+	width: 100%
+}
+
+main h1 > p {
+	font-size: 1.2rem;
+}
+
+
+
+@media only screen and (max-width: 768px) {
+	.test {
+		display: block;
+	}
+
+	main h1 > p {
+		font-size: 1rem;
+	}
+}

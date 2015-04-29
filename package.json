@@ -1,0 +1,40 @@
+{
+  "name": "filter-css",
+  "version": "0.0.0",
+  "description": "My slick module",
+  "license": "MIT",
+  "repository": "bezoerb/filter-css",
+  "author": {
+    "name": "Ben Zörb",
+    "email": "ben@sommerlaune.com",
+    "url": "sommerlaune.com"
+  },
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "scripts": {
+    "test": "jshint . && mocha test/*.js"
+  },
+  "files": [
+    "index.js",
+    "cli.js"
+  ],
+  "bin": {
+    "filtercss": "cli.js"
+  },
+  "keywords": [
+    ""
+  ],
+  "dependencies": {
+    "css": "^2.2.0",
+    "get-stdin": "^4.0.1",
+    "lodash": "^3.7.0",
+    "meow": "^3.1.0",
+    "update-notifier": "^0.4.0"
+  },
+  "devDependencies": {
+    "chai": "^2.3.0",
+    "jshint": "^2.7.0",
+    "mocha": "^2.2.4"
+  }
+}
