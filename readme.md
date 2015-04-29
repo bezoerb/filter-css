@@ -51,6 +51,17 @@ filterCss('test/fixtures/test.css',[/bod/]);
 }
 ```
 
+## CLI
+
+filter-css works well with standard input.
+```shell
+$ cat test/fixture/test.css | filtercss --ignore @font-face
+```
+You can also pass in the file as an option.
+```shell
+$ filtercss test/fixture/test.css --ignore @font-face
+```
+
 ## API
 
 ### filterCss(input, [ignores])
