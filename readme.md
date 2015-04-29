@@ -1,6 +1,6 @@
 # filter-css [![Build Status](https://travis-ci.org/bezoerb/filter-css.svg?branch=master)](https://travis-ci.org/bezoerb/filter-css)
 
-> My slick module
+Filter CSS rules
 
 
 ## Install
@@ -45,6 +45,7 @@ var filterCss = require('filter-css');
 filterCss('test/fixtures/test.css',[/bod/]);
 //=> 
 ```
+```css
 @font-face {
 	font-family: 'Glyphicons Halflings';
 }
