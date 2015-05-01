@@ -11,22 +11,29 @@ function read(file) {
 /**
  * Identify ignored selectors
  * @param {array} ignore
+ * @param {string} key
  * @returns {Function}
  */
-function identifySelectors(ignore) {
-	return function (selector) {
+function identify(ignore,key) {
+
+	return function (element) {
+		if (_.isObject(element) && key) {
+			element = _.result(element,key);
+		}
+
 		for (var i = 0; i < ignore.length; ++i) {
 			/* If ignore is RegExp and matches selector ... */
-			if (_.isRegExp(ignore[i]) && ignore[i].test(selector)) {
+			if (_.isRegExp(ignore[i]) && ignore[i].test(element)) {
 				return true;
 			}
-			if (ignore[i] === selector) {
+			if (ignore[i] === element) {
 				return true;
 			}
 		}
 		return false;
 	};
 }
+
 
 /**
  *
@@ -51,9 +58,11 @@ function reduceRules(ignore) {
 				rules.push(rule);
 			}
 		} else if (rule.type === 'rule') {
-			rule.selectors = _.reject(rule.selectors || [], identifySelectors(ignore));
+			rule.selectors = _.reject(rule.selectors || [], identify(ignore));
 
 			if (_.size(rule.selectors)) {
+				rule.declarations = _.reject(rule.declarations || [], identify(ignore,'value'));
+
 				rules.push(rule);
 			}
 		} else {

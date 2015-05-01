@@ -91,6 +91,36 @@ describe('Module', function(){
 			expect(err).to.not.exist();
 		}
 	});
+
+	it('should remove declarations if value matches RegExp', function () {
+		try {
+			var css = filterCss(read('test/fixtures/test.css'),[/url\(/]);
+			expect(css).to.contain('body');
+			expect(css).to.contain('html');
+			expect(css).to.contain('font-face');
+			expect(css).to.contain('.my.awesome.selecror');
+			expect(css).to.contain('main h1 > p');
+			expect(css).to.contain('.test');
+			expect(css).to.not.contain('/myImage.jpg');
+		} catch (err) {
+			expect(err).to.not.exist();
+		}
+	});
+
+	it('should remove declarations if value matches String', function () {
+		try {
+			var css = filterCss(read('test/fixtures/test.css'),['url(\'/myImage.jpg\')']);
+			expect(css).to.contain('body');
+			expect(css).to.contain('html');
+			expect(css).to.contain('font-face');
+			expect(css).to.contain('.my.awesome.selecror');
+			expect(css).to.contain('main h1 > p');
+			expect(css).to.contain('.test');
+			expect(css).to.not.contain('/myImage.jpg');
+		} catch (err) {
+			expect(err).to.not.exist();
+		}
+	});
 });
 
 describe('CLI', function(){

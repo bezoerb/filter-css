@@ -30,7 +30,7 @@ function go(data) {
 		var match = ignore.match(/^\/(.*)\/([igmy]+)?$/);
 
 		if (match) {
-			return new RegExp(_.escapeRegExp(match[1]),match[2]);
+			return new RegExp(match[1],match[2]);
 		}
 		return ignore;
 	});
