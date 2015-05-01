@@ -51,6 +51,28 @@ filterCss('test/fixtures/test.css',[/bod/]);
 }
 ```
 
+#### Filter Declaration
+```css
+.bigBackground {
+	width: 100%;
+	height: 100%;
+	background-image: url('some/big/image.png');
+}
+```
+
+```js
+var filterCss = require('filter-css');
+
+filterCss('test/fixtures/test.css',[/url\(/]);
+//=> 
+```
+```css
+.bigBackground {
+	width: 100%;
+	height: 100%;
+}
+```
+
 ## CLI
 
 filter-css works well with standard input.
