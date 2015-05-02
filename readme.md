@@ -12,6 +12,41 @@ $ npm install --save filter-css
 
 ## Usage
 
+```js
+var filterCss = require('filter-css');
+
+var filtered = filterCss('test.css',{
+    types: ['<type>'],
+    selectors: ['.my-selector > p', /(some)|(regexp)/],
+    declarations: ['url(myImage.png)', /url/],
+});
+
+```
+
+When only filtering types and seletors you can use a shorthand.
+Types are identified by a leading `@`. Everything else (RegExp, String) is used for selector matching.
+```js
+var filterCss = require('filter-css');
+
+var filtered = filterCss('test.css',['@<type>','.my > complete-selector',/complete/]);
+
+```
+
+You can also pass in a filter function. The function receives the type as first and the AST Element / String as second argument. 
+When the function returns true, the element will be discarded. 
+
+```js
+var filterCss = require('filter-css');
+
+var filtered = filterCss('test.css',function(type, data){
+	return type === 'type' && data === 'font-face' ||
+		   type === 'selector' && data.match(/test/) ||
+    	   type === 'declaration' && /background/.test(data.property) && /url/.test(data.value);
+});
+
+```
+
+
 ```css
 body {
 	margin: 0;
