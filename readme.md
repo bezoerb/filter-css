@@ -132,7 +132,7 @@ CSS filepath or raw css string.
 
 #### ignores
 
-Type: `array`
+Type: `array`|`object`
 
 List of RegExp, @type or selectors to remove 
 
