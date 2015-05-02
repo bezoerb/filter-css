@@ -45,7 +45,7 @@ var filtered = filterCss('test.css',function(type, data){
 });
 
 ```
-
+## Examples
 
 ```css
 body {
@@ -98,7 +98,7 @@ filterCss('test/fixtures/test.css',[/bod/]);
 ```js
 var filterCss = require('filter-css');
 
-filterCss('test/fixtures/test.css',[/url\(/]);
+filterCss('test/fixtures/test.css', {declarations: [/url/]});
 //=> 
 ```
 ```css
