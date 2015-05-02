@@ -1,6 +1,6 @@
 {
   "name": "filter-css",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Filter CSS rules",
   "license": "MIT",
   "repository": "bezoerb/filter-css",
