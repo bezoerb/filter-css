@@ -28,7 +28,7 @@ Types are identified by a leading `@`. Everything else (RegExp, String) is used 
 ```js
 var filterCss = require('filter-css');
 
-var filtered = filterCss('test.css',['@<type>','.my > complete-selector',/complete/]);
+var filtered = filterCss('test.css',['@<type>','.my > .selector',/complete/]);
 
 ```
 
