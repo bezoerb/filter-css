@@ -16,7 +16,7 @@ $ npm install --save filter-css
 var filterCss = require('filter-css');
 
 var filtered = filterCss('test.css',{
-    types: ['<type>'],
+    types: ['@type'],
     selectors: ['.my-selector > p', /(some)|(regexp)/],
     declarations: ['url(myImage.png)', /url/],
 });
@@ -106,6 +106,15 @@ filterCss('test/fixtures/test.css', {declarations: [/url/]});
 	width: 100%;
 	height: 100%;
 }
+```
+
+#### Complete Example 
+```js
+filterCss('test/fixtures/test.css', {
+    types: ['@font-face'],
+    selectors: ['.my-selector > p'],
+    declarations: [/url/]
+});
 ```
 
 ## CLI
