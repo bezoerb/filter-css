@@ -27,3 +27,9 @@ main h1 > p {
 		font-size: 1rem;
 	}
 }
+
+@media only print {
+	h1 {
+		color: #000;
+	}
+}

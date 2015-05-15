@@ -4,9 +4,11 @@ var fs = require('fs');
 var css = require('css');
 
 var _default = {
-	selectors: [],
-	declarations: [],
-	types: []
+	matchSelectors: true,
+	matchTypes: true,
+	matchDeclarationProperties: true,
+	matchDeclarationValues: true,
+	matchMedia: true
 };
 
 function read(file) {
@@ -20,11 +22,10 @@ function read(file) {
  * @param {string} pluck attribute to pluck from object
  * @returns {Function}
  */
-function matcher(ignores, pluck) {
-
+function _matcher(ignores, pluck) {
 	function getValue(element) {
 		if (pluck) {
-			return _.result(element,pluck);
+			return _.result(element, pluck);
 		}
 		return element;
 	}
@@ -48,35 +49,53 @@ function matcher(ignores, pluck) {
  *
  * @param ignore
  * @returns {Function}
+ * @param opts
  */
-function reduceRules(ignore) {
+function reduceRules(ignore, opts) {
 
-	function ignoreList(key) {
-		return (_.isObject(ignore) && _.result(ignore,key)) || [];
-	}
+	var match = _matcher(ignore);
+	var matcher = _.partial(_matcher, ignore);
 
 
 	return function reducer(rules, rule) {
 		// check if whole type is ignored
-		if (_.isFunction(ignore) && ignore('type',rule.type) || matcher(ignoreList('types'), 'type')(rule)) {
+		if (opts.matchTypes && match('@' + rule.type)) {
 			return rules;
 		}
 
 		// check for ignores in media queries
 		if (rule.type === 'media') {
+			if (opts.matchMedia && match(rule.media)) {
+				return rules;
+			}
+
+
 			rule.rules = _.reduce(rule.rules || [], reducer, []);
 
 			if (_.size(rule.rules)) {
 				rules.push(rule);
 			}
 		} else if (rule.type === 'rule') {
-			rule.selectors = _.reject(rule.selectors || [], _.isFunction(ignore) && _.partial(ignore,'selector') || matcher(ignoreList('selectors')));
-
+			// check selector
+			if (opts.matchSelectors) {
+				rule.selectors = _.reject(rule.selectors || [], match);
+			}
 
 			if (_.size(rule.selectors)) {
-				rule.declarations = _.reject(rule.declarations || [],  _.isFunction(ignore) && _.partial(ignore,'declaration') || matcher(ignoreList('declarations'),'value'));
+				// check declaration property
+				if (opts.matchDeclarationProperties) {
+					rule.declarations = _.reject(rule.declarations || [], matcher('property'));
+				}
 
-				rules.push(rule);
+				// check declaration value
+				if (opts.matchDeclarationValues) {
+					rule.declarations = _.reject(rule.declarations || [], matcher('value'));
+				}
+
+				// add rule if something's left
+				if (_.size(rule.declarations)) {
+					rules.push(rule);
+				}
 			}
 		} else {
 			rules.push(rule);
@@ -86,51 +105,19 @@ function reduceRules(ignore) {
 	};
 }
 
-/**
- * Normalize ignore to the form {types: [], selectors: [], declarations: []}
- * @param ignore
- * @returns {object|function}
- */
-function normalizeIgnore(ignore) {
-	if (!ignore) {
-		return _default;
-	}  else if (_.isFunction(ignore)) {
-		return ignore;
-	} else if (_.isString(ignore) || _.isRegExp(ignore)) {
-		ignore = [ignore];
-	}
 
-	// convert shorthands @... for type
-	if (_.isArray(ignore)) {
-		var parts = _.partition(ignore, RegExp.prototype.test, /^@/);
-		return {
-			types: _.invoke(parts[0],String.prototype.substr,1),
-			selectors: parts[1],
-			declarations: []
-		};
-	}
+function api(stylesheet, ignore, opts) {
 
-	return {
-		types: _.map(ignore.types || [], function(str){
-			return _.isString(str) && str.replace(/^@/,'') || str;
-		}),
-		selectors: ignore.selectors || [],
-		declarations: ignore.declarations || []
-	};
-
-}
-
-function api(stylesheet, ignore) {
-
+	opts = _.defaults(opts || {}, _default);
 
 	var sheet;
 	try {
-		 sheet = css.parse(read(stylesheet));
+		sheet = css.parse(read(stylesheet));
 	} catch (err) {
-		 sheet = css.parse(stylesheet);
+		sheet = css.parse(stylesheet);
 	}
 
-	sheet.stylesheet.rules = _.reduce(sheet.stylesheet.rules, reduceRules(normalizeIgnore(ignore)), []);
+	sheet.stylesheet.rules = _.reduce(sheet.stylesheet.rules, reduceRules(ignore, opts), []);
 	return css.stringify(sheet);
 }
 
