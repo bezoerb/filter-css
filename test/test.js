@@ -19,7 +19,7 @@ function read (file) {
 describe('Module', function(){
 	it('should work with css string', function(){
 		try {
-			var css = filterTest([/body/]);
+			var css = filterCss(read('test/fixtures/test.css'),[/body/]);
 			expect(css).to.not.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
