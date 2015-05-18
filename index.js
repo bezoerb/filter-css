@@ -19,10 +19,12 @@ function read(file) {
 /**
  * Identify ignored selectors
  * @param {array} ignores
+ * @param {string} identifier
+ * @param {object} node
  * @param {string} pluck attribute to pluck from object
  * @returns {Function}
  */
-function _matcher(ignores, pluck) {
+function _matcher(ignores, identifier, node, pluck) {
 	function getValue(element) {
 		if (pluck) {
 			return _.result(element, pluck);
@@ -32,6 +34,10 @@ function _matcher(ignores, pluck) {
 
 	return function (element) {
 		for (var i = 0; i < ignores.length; ++i) {
+			if (_.isFunction(ignores[i]) && ignores[i](identifier, getValue(element), node || element)) {
+				return true;
+			}
+
 			/* If ignore is RegExp and matches selector ... */
 			if (_.isRegExp(ignores[i]) && ignores[i].test(getValue(element))) {
 				return true;
@@ -53,19 +59,18 @@ function _matcher(ignores, pluck) {
  */
 function reduceRules(ignore, opts) {
 
-	var match = _matcher(ignore);
 	var matcher = _.partial(_matcher, ignore);
 
 
 	return function reducer(rules, rule) {
 		// check if whole type is ignored
-		if (opts.matchTypes && match('@' + rule.type)) {
+		if (opts.matchTypes && matcher('type', rule)('@' + rule.type)) {
 			return rules;
 		}
 
 		// check for ignores in media queries
 		if (rule.type === 'media') {
-			if (opts.matchMedia && match(rule.media)) {
+			if (opts.matchMedia && matcher('media', rule)(rule.media)) {
 				return rules;
 			}
 
@@ -78,18 +83,18 @@ function reduceRules(ignore, opts) {
 		} else if (rule.type === 'rule') {
 			// check selector
 			if (opts.matchSelectors) {
-				rule.selectors = _.reject(rule.selectors || [], match);
+				rule.selectors = _.reject(rule.selectors || [], matcher('selector', rule));
 			}
 
 			if (_.size(rule.selectors)) {
 				// check declaration property
 				if (opts.matchDeclarationProperties) {
-					rule.declarations = _.reject(rule.declarations || [], matcher('property'));
+					rule.declarations = _.reject(rule.declarations || [], matcher('declarationProperty', undefined, 'property'));
 				}
 
 				// check declaration value
 				if (opts.matchDeclarationValues) {
-					rule.declarations = _.reject(rule.declarations || [], matcher('value'));
+					rule.declarations = _.reject(rule.declarations || [], matcher('declarationValue', undefined, 'value'));
 				}
 
 				// add rule if something's left
@@ -109,6 +114,10 @@ function reduceRules(ignore, opts) {
 function api(stylesheet, ignore, opts) {
 
 	opts = _.defaults(opts || {}, _default);
+
+	if (!_.isArray(ignore)) {
+		ignore = [ignore];
+	}
 
 	var sheet;
 	try {

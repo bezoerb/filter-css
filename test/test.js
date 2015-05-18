@@ -23,7 +23,7 @@ describe('Module', function(){
 			expect(css).to.not.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
-			expect(css).to.contain('.my.awesome.selecror');
+			expect(css).to.contain('.my.awesome.selector');
 			expect(css).to.contain('main h1 > p');
 			expect(css).to.contain('.test');
 			expect(css).to.contain('only print');
@@ -38,7 +38,7 @@ describe('Module', function(){
 			expect(css).to.not.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
-			expect(css).to.contain('.my.awesome.selecror');
+			expect(css).to.contain('.my.awesome.selector');
 			expect(css).to.contain('main h1 > p');
 			expect(css).to.contain('.test');
 			expect(css).to.contain('only print');
@@ -58,7 +58,7 @@ describe('Module', function(){
 		expect(css).to.contain('body');
 		expect(css).to.contain('html');
 		expect(css).to.contain('font-face');
-		expect(css).to.contain('.my.awesome.selecror');
+		expect(css).to.contain('.my.awesome.selector');
 		expect(css).to.contain('main h1 > p');
 		expect(css).to.contain('.test');
 		expect(css).to.contain('only print');
@@ -75,7 +75,7 @@ describe('Module', function(){
 		expect(css).to.not.contain('body');
 		expect(css).to.not.contain('html');
 		expect(css).to.not.contain('font-face');
-		expect(css).to.not.contain('.my.awesome.selecror');
+		expect(css).to.not.contain('.my.awesome.selector');
 		expect(css).to.not.contain('main h1 > p');
 		expect(css).to.not.contain('.test');
 		expect(css).to.not.contain('only print');
@@ -91,7 +91,7 @@ describe('Module', function(){
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
-			expect(css).to.contain('.my.awesome.selecror');
+			expect(css).to.contain('.my.awesome.selector');
 			expect(css).to.contain('main h1 > p');
 			expect(css).to.contain('.test');
 			expect(css).to.contain('/myImage.jpg');
@@ -106,7 +106,7 @@ describe('Module', function(){
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.not.contain('font-face');
-			expect(css).to.contain('.my.awesome.selecror');
+			expect(css).to.contain('.my.awesome.selector');
 			expect(css).to.contain('main h1 > p');
 			expect(css).to.contain('.test');
 			expect(css).to.contain('only print');
@@ -121,7 +121,26 @@ describe('Module', function(){
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.not.contain('font-face');
-			expect(css).to.contain('.my.awesome.selecror');
+			expect(css).to.contain('.my.awesome.selector');
+			expect(css).to.contain('main h1 > p');
+			expect(css).to.contain('.test');
+			expect(css).to.contain('only print');
+		} catch (err) {
+			expect(err).to.not.exist();
+		}
+	});
+	it('should remove types with function matcher', function () {
+		function filter(context,value,obj) {
+			expect(obj).to.have.ownProperty('type');
+			return context === 'type' && /font-face/.test(value);
+		}
+
+		try {
+			var css = filterTest([filter]);
+			expect(css).to.contain('body');
+			expect(css).to.contain('html');
+			expect(css).to.not.contain('font-face');
+			expect(css).to.contain('.my.awesome.selector');
 			expect(css).to.contain('main h1 > p');
 			expect(css).to.contain('.test');
 			expect(css).to.contain('only print');
@@ -130,13 +149,33 @@ describe('Module', function(){
 		}
 	});
 
-	it('should remove selectors specified by shorthand RegExp', function () {
+
+	it('should remove empty selectors ', function () {
+		function filter(context,value,obj) {
+			expect(obj).to.have.ownProperty('type');
+			return obj.type === 'declaration' && (obj.property === 'width' || obj.property === 'background' );
+		}
+
+		try {
+			var css = filterTest(filter);
+			expect(css).to.contain('body');
+			expect(css).to.contain('html');
+			expect(css).to.contain('font-face');
+			expect(css).to.not.contain('.my.awesome.selector');
+			expect(css).to.contain('main h1 > p');
+			expect(css).to.contain('.test');
+		} catch (err) {
+			expect(err).to.not.exist();
+		}
+	});
+
+	it('should remove selectors specified by RegExp', function () {
 		try {
 			var css = filterTest([/awesome/]);
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
-			expect(css).to.not.contain('.my.awesome.selecror');
+			expect(css).to.not.contain('.my.awesome.selector');
 			expect(css).to.contain('main h1 > p');
 			expect(css).to.contain('.test');
 		} catch (err) {
@@ -150,7 +189,7 @@ describe('Module', function(){
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
-			expect(css).to.contain('.my.awesome.selecror');
+			expect(css).to.contain('.my.awesome.selector');
 			expect(css).to.not.contain('main h1 > p');
 			expect(css).to.contain('.test');
 		} catch (err) {
@@ -164,7 +203,25 @@ describe('Module', function(){
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
-			expect(css).to.contain('.my.awesome.selecror');
+			expect(css).to.contain('.my.awesome.selector');
+			expect(css).to.not.contain('main h1 > p');
+			expect(css).to.contain('.test');
+		} catch (err) {
+			expect(err).to.not.exist();
+		}
+	});
+	it('should remove selector with function matcher', function () {
+		function filter(context,value,obj) {
+			expect(obj).to.have.ownProperty('type');
+			return context === 'selector' && value === 'main h1 > p';
+		}
+
+		try {
+			var css = filterTest(filter);
+			expect(css).to.contain('body');
+			expect(css).to.contain('html');
+			expect(css).to.contain('font-face');
+			expect(css).to.contain('.my.awesome.selector');
 			expect(css).to.not.contain('main h1 > p');
 			expect(css).to.contain('.test');
 		} catch (err) {
@@ -178,7 +235,7 @@ describe('Module', function(){
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
-			expect(css).to.contain('.my.awesome.selecror');
+			expect(css).to.contain('.my.awesome.selector');
 			expect(css).to.contain('main h1 > p');
 			expect(css).to.contain('.test');
 			expect(css).to.not.contain('/myImage.jpg');
@@ -193,7 +250,7 @@ describe('Module', function(){
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
-			expect(css).to.contain('.my.awesome.selecror');
+			expect(css).to.contain('.my.awesome.selector');
 			expect(css).to.contain('main h1 > p');
 			expect(css).to.contain('.test');
 			expect(css).to.not.contain('/myImage.jpg');
@@ -208,7 +265,27 @@ describe('Module', function(){
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
-			expect(css).to.contain('.my.awesome.selecror');
+			expect(css).to.contain('.my.awesome.selector');
+			expect(css).to.contain('main h1 > p');
+			expect(css).to.contain('.test');
+			expect(css).to.not.contain('/myImage.jpg');
+		} catch (err) {
+			expect(err).to.not.exist();
+		}
+	});
+
+	it('should remove declarations with function matcher', function () {
+		function filter(context,value,obj) {
+			expect(obj).to.have.ownProperty('type');
+			return context === 'declarationValue' && /url/.test(value);
+		}
+
+		try {
+			var css = filterTest(filter);
+			expect(css).to.contain('body');
+			expect(css).to.contain('html');
+			expect(css).to.contain('font-face');
+			expect(css).to.contain('.my.awesome.selector');
 			expect(css).to.contain('main h1 > p');
 			expect(css).to.contain('.test');
 			expect(css).to.not.contain('/myImage.jpg');
@@ -223,7 +300,7 @@ describe('Module', function(){
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
-			expect(css).to.contain('.my.awesome.selecror');
+			expect(css).to.contain('.my.awesome.selector');
 			expect(css).to.contain('main h1 > p');
 			expect(css).to.contain('.test');
 			expect(css).to.contain('/myImage.jpg');
@@ -239,7 +316,28 @@ describe('Module', function(){
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
-			expect(css).to.contain('.my.awesome.selecror');
+			expect(css).to.contain('.my.awesome.selector');
+			expect(css).to.contain('main h1 > p');
+			expect(css).to.contain('.test');
+			expect(css).to.contain('/myImage.jpg');
+			expect(css).to.not.contain('only print');
+		} catch (err) {
+			expect(err).to.not.exist();
+		}
+	});
+
+	it('should remove media with function matcher', function () {
+		function filter(context,value,obj) {
+			expect(obj).to.have.ownProperty('type');
+			return context === 'media' && /print/.test(value);
+		}
+
+		try {
+			var css = filterTest([filter]);
+			expect(css).to.contain('body');
+			expect(css).to.contain('html');
+			expect(css).to.contain('font-face');
+			expect(css).to.contain('.my.awesome.selector');
 			expect(css).to.contain('main h1 > p');
 			expect(css).to.contain('.test');
 			expect(css).to.contain('/myImage.jpg');
@@ -270,7 +368,7 @@ describe('CLI', function(){
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
-			expect(css).to.contain('.my.awesome.selecror');
+			expect(css).to.contain('.my.awesome.selector');
 			expect(css).to.not.contain('main h1 > p');
 			expect(css).to.contain('.test');
 			done();
@@ -286,10 +384,48 @@ describe('CLI', function(){
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.not.contain('font-face');
-			expect(css).to.contain('.my.awesome.selecror');
+			expect(css).to.contain('.my.awesome.selector');
 			expect(css).to.contain('main h1 > p');
 			expect(css).to.contain('.test');
 			done();
 		});
+	});
+
+	it('should default filter options to true', function (done) {
+		var cp = execFile('node', [
+			path.join(__dirname, '../', pkg.bin.filtercss),
+			'test/fixtures/test.css',
+			'--ignore', '/.*/'
+		]);
+
+		cp.stdout.on('data', function (css) {
+			expect(css).to.not.contain('body');
+			expect(css).to.not.contain('html');
+			expect(css).to.not.contain('font-face');
+			expect(css).to.not.contain('.my.awesome.selector');
+			expect(css).to.not.contain('main h1 > p');
+			expect(css).to.not.contain('.test');
+			done();
+		});
+
+	});
+
+	it('should consider ignore options ', function (done) {
+		var cp = execFile('node', [
+			path.join(__dirname, '../', pkg.bin.filtercss),
+			'test/fixtures/test.css',
+			'--ignore', '/.*/','-STPVM'
+		]);
+
+		cp.stdout.on('data', function (css) {
+			expect(css).to.contain('body');
+			expect(css).to.contain('html');
+			expect(css).to.contain('font-face');
+			expect(css).to.contain('.my.awesome.selector');
+			expect(css).to.contain('main h1 > p');
+			expect(css).to.contain('.test');
+			done();
+		});
+
 	});
 });

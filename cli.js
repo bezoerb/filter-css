@@ -11,10 +11,24 @@ var help = [
 	'Usage: filtercss <input> [<option>]',
 	'',
 	'Options:',
-	'   -i, --ignore  RegExp, selector @type to ignore'
+	'   -i, --ignore  RegExp, selector @type to ignore',
+	'   -S, --skipSelectors Don\'t match selectors',
+	'   -T, --skipTypes Don\'t match types',
+	'   -P, --skipDeclarationProperties Don\'t match declaration properties',
+	'   -V, --skiphDeclarationValues Don\'t match declaration vakues',
+	'   -M, --skipMedia Don\'t match media'
 ].join('\n');
 
-var cli = meow({help: help}, {alias: {i: 'ignore'}});
+
+
+var cli = meow({help: help}, {alias: {
+	i: 'ignore',
+	S: 'skipSelectors',
+	T: 'skipTypes',
+	P: 'skipDeclarationProperties',
+	V: 'skiphDeclarationValues',
+	M: 'skipMedia'
+}});
 
 if (cli.flags['update-notifier'] !== false) {
 	updateNotifier({pkg: pkg}).notify();
@@ -34,7 +48,20 @@ function go(data) {
 		}
 		return ignore;
 	});
-	var diff = filterCss(data,ignores);
+
+	if (!data) {
+		cli.showHelp();
+		return;
+	}
+
+
+	var diff = filterCss(data,ignores, {
+		matchSelectors: !cli.flags.skipSelectors,
+		matchTypes: !cli.flags.skipTypes,
+		matchDeclarationProperties: !cli.flags.skipDeclarationProperties,
+		matchDeclarationValues: !cli.flags.skiphDeclarationValues,
+		matchMedia: !cli.flags.skipMedia
+	});
 	console.log(diff);
 	process.exit();
 }
