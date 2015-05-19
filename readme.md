@@ -54,7 +54,6 @@ Per default `filter-css` will be applied to all parts of the CSS. This behavior 
 
 ## Examples
 
-
 ```css
 .bigBackground {
 	width: 100%;
@@ -108,6 +107,15 @@ filterCss('test/fixtures/test.css',function(context, value, node) {
 	return context === 'declarationValue' && value === "url('some/big/image.png')"
 });
 
+```
+
+#### Complete Example 
+```js
+filterCss('test/fixtures/test.css', {
+    types: ['@font-face'],
+    selectors: ['.my-selector > p'],
+    declarations: [/url/]
+});
 ```
 
 ## CLI
