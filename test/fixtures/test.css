@@ -7,7 +7,7 @@ html,body {
 	font-family: 'Glyphicons Halflings';
 }
 
-.my.awesome.selecror {
+.my.awesome.selector {
 	width: 100%;
 	background: url('/myImage.jpg');
 }
@@ -25,5 +25,11 @@ main h1 > p {
 
 	main h1 > p {
 		font-size: 1rem;
+	}
+}
+
+@media only print {
+	h1 {
+		color: #000;
 	}
 }
