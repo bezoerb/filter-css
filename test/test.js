@@ -365,6 +365,9 @@ describe('CLI', function(){
 		]);
 
 		cp.stdout.on('data', function (css) {
+			if (css instanceof Buffer) {
+				css = css.toString('utf8');
+			}
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
@@ -381,6 +384,9 @@ describe('CLI', function(){
 		var cp = exec('cat test/fixtures/test.css | node ' + path.join(__dirname, '../', pkg.bin.filtercss) + ' --ignore @font-face');
 
 		cp.stdout.on('data', function (css) {
+			if (css instanceof Buffer) {
+				css = css.toString('utf8');
+			}
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.not.contain('font-face');
@@ -399,6 +405,9 @@ describe('CLI', function(){
 		]);
 
 		cp.stdout.on('data', function (css) {
+			if (css instanceof Buffer) {
+				css = css.toString('utf8');
+			}
 			expect(css).to.not.contain('body');
 			expect(css).to.not.contain('html');
 			expect(css).to.not.contain('font-face');
@@ -418,6 +427,9 @@ describe('CLI', function(){
 		]);
 
 		cp.stdout.on('data', function (css) {
+			if (css instanceof Buffer) {
+				css = css.toString('utf8');
+			}
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');

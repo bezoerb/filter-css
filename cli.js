@@ -77,6 +77,7 @@ function die() {
 if (cli.input[0]) {
 	go(cli.input[0]);
 } else {
-	stdin(go);
-	setTimeout(die, 100);
+	// get stdin
+	stdin().then(go);
+	setTimeout(die, 200);
 }
