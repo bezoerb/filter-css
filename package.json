@@ -13,7 +13,7 @@
     "node": ">=0.10.0"
   },
   "scripts": {
-    "test": "jshint . && mocha test/*.js"
+    "test": "jshint . && mocha test/*.js --timeout 5000"
   },
   "files": [
     "index.js",
