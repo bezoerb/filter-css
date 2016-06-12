@@ -1,4 +1,4 @@
-# filter-css [![Build Status](https://travis-ci.org/bezoerb/filter-css.svg?branch=master)](https://travis-ci.org/bezoerb/filter-css)
+# filter-css [![NPM version][npm-image]][npm-url] [![Build Status][travis-image]][travis-url] [![Build status][appveyor-image]][appveyor-url] [![Dependency Status][depstat-image]][depstat-url]
 
 Filter CSS rules
 
@@ -137,3 +137,15 @@ See `filtercss --help` for a full list of options.
 ## License
 
 MIT © [Ben Zörb](http://sommerlaune.com)
+
+[npm-url]: https://npmjs.org/package/filter-css
+[npm-image]: https://badge.fury.io/js/filter-css.svg
+
+[travis-url]: https://travis-ci.org/bezoerb/filter-css
+[travis-image]: https://travis-ci.org/bezoerb/filter-css.svg?branch=master
+
+[appveyor-url]: https://ci.appveyor.com/project/bezoerb/filter-css/branch/master
+[appveyor-image]: https://ci.appveyor.com/api/projects/status/xypps7lx2usx3akp/branch/master?svg=true
+
+[depstat-url]: https://david-dm.org/bezoerb/filter-css
+[depstat-image]: https://david-dm.org/bezoerb/filter-css.svg
