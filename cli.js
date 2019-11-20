@@ -1,34 +1,37 @@
 'use strict';
-var meow = require('meow');
-var _ = require('lodash');
-var stdin = require('get-stdin');
-var updateNotifier = require('update-notifier');
-var filterCss = require('./');
-var pkg = require('./package.json');
-var ok;
 
-var help = [
-	'Usage: filtercss <input> [<option>]',
-	'',
-	'Options:',
-	'   -i, --ignore  RegExp, selector @type to ignore',
-	'   -S, --skipSelectors Don\'t match selectors',
-	'   -T, --skipTypes Don\'t match types',
-	'   -P, --skipDeclarationProperties Don\'t match declaration properties',
-	'   -V, --skiphDeclarationValues Don\'t match declaration vakues',
-	'   -M, --skipMedia Don\'t match media'
-].join('\n');
+const meow = require('meow');
+const _ = require('lodash');
+const stdin = require('get-stdin');
+const updateNotifier = require('update-notifier');
+const filterCss = require('./');
+const pkg = require('./package.json');
+let ok;
 
+const help = `
+Usage: filtercss <input> [<option>]
 
+Options:
+  -i, --ignore RegExp, selector @type to ignore
+  -S, --skipSelectors Don't match selectors
+  -T, --skipTypes Don't match types
+  -P, --skipDeclarationProperties Don't match declaration properties
+  -V, --skiphDeclarationValues Don't match declaration values
+  -M, --skipMedia Don't match media
+`;
 
-var cli = meow({help: help}, {alias: {
-	i: 'ignore',
-	S: 'skipSelectors',
-	T: 'skipTypes',
-	P: 'skipDeclarationProperties',
-	V: 'skiphDeclarationValues',
-	M: 'skipMedia'
-}});
+const cli = meow(
+	help, {
+		alias: {
+			i: 'ignore',
+			S: 'skipSelectors',
+			T: 'skipTypes',
+			P: 'skipDeclarationProperties',
+			V: 'skiphDeclarationValues',
+			M: 'skipMedia'
+		}
+	}
+);
 
 if (cli.flags['update-notifier'] !== false) {
 	updateNotifier({pkg: pkg}).notify();
@@ -39,9 +42,9 @@ function go(data) {
 	if (_.isString(cli.flags.ignore) || _.isRegExp(cli.flags.ignore)) {
 		cli.flags.ignore = [cli.flags.ignore];
 	}
-	var ignores = _.map(cli.flags.ignore || [], function(ignore) {
+	const ignores = _.map(cli.flags.ignore || [], ignore => {
 		// check regex
-		var match = ignore.match(/^\/(.*)\/([igmy]+)?$/);
+		const match = ignore.match(/^\/(.*)\/([igmy]+)?$/);
 
 		if (match) {
 			return new RegExp(match[1],match[2]);
@@ -55,13 +58,14 @@ function go(data) {
 	}
 
 
-	var diff = filterCss(data,ignores, {
+	const diff = filterCss(data,ignores, {
 		matchSelectors: !cli.flags.skipSelectors,
 		matchTypes: !cli.flags.skipTypes,
 		matchDeclarationProperties: !cli.flags.skipDeclarationProperties,
 		matchDeclarationValues: !cli.flags.skiphDeclarationValues,
 		matchMedia: !cli.flags.skipMedia
 	});
+
 	console.log(diff);
 	process.exit();
 }

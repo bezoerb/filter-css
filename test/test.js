@@ -1,14 +1,15 @@
 'use strict';
-var expect = require('chai').expect;
-var fs = require('fs');
-var _ = require('lodash');
-var path = require('path');
-var pkg = require('../package.json');
-var skipWin = process.platform === 'win32'? it.skip : it;
-var exec = require('child_process').exec;
-var execFile = require('child_process').execFile;
-var filterCss = require('../');
-var filterTest = _.partial(filterCss, 'test/fixtures/test.css');
+
+const expect = require('chai').expect;
+const fs = require('fs');
+const _ = require('lodash');
+const path = require('path');
+const pkg = require('../package.json');
+const skipWin = process.platform === 'win32'? it.skip : it;
+const exec = require('child_process').exec;
+const execFile = require('child_process').execFile;
+const filterCss = require('../');
+const filterTest = _.partial(filterCss, 'test/fixtures/test.css');
 
 function read (file) {
 	return fs.readFileSync(file, { encoding: 'utf8' });
@@ -16,10 +17,10 @@ function read (file) {
 
 
 
-describe('Module', function(){
-	it('should work with css string', function(){
+describe('Module', () => {
+	it('should work with css string', () => {
 		try {
-			var css = filterCss(read('test/fixtures/test.css'),[/body/]);
+			const css = filterCss(read('test/fixtures/test.css'),[/body/]);
 			expect(css).to.not.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
@@ -32,9 +33,9 @@ describe('Module', function(){
 		}
 	});
 
-	it('should work with stylesheet file', function(){
+	it('should work with stylesheet file', () => {
 		try {
-			var css = filterTest([/body/]);
+			const css = filterTest([/body/]);
 			expect(css).to.not.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
@@ -47,8 +48,8 @@ describe('Module', function(){
 		}
 	});
 
-	it('should consider options', function(){
-		var css = filterTest([/.*/],{
+	it('should consider options', () => {
+		const css = filterTest([/.*/],{
 			matchSelectors: false,
 			matchTypes: false,
 			matchDeclarationProperties: false,
@@ -64,8 +65,8 @@ describe('Module', function(){
 		expect(css).to.contain('only print');
 	});
 
-	it('should remove everything', function(){
-		var css = filterTest([/.*/],{
+	it('should remove everything', () => {
+		const css = filterTest([/.*/],{
 			matchSelectors: true,
 			matchTypes: true,
 			matchDeclarationProperties: true,
@@ -83,9 +84,9 @@ describe('Module', function(){
 		console.log('CSS:',css);
 	});
 
-	it('should consider "matchDeclarationValues" option', function () {
+	it('should consider "matchDeclarationValues" option', () => {
 		try {
-			var css = filterTest([/url\(/], {
+			const css = filterTest([/url\(/], {
 				matchDeclarationValues: false
 			});
 			expect(css).to.contain('body');
@@ -100,9 +101,9 @@ describe('Module', function(){
 		}
 	});
 
-	it('should remove types specified by string', function () {
+	it('should remove types specified by string', () => {
 		try {
-			var css = filterTest(['@font-face']);
+			const css = filterTest(['@font-face']);
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.not.contain('font-face');
@@ -115,9 +116,9 @@ describe('Module', function(){
 		}
 	});
 
-	it('should remove types specified by RegExp', function () {
+	it('should remove types specified by RegExp', () => {
 		try {
-			var css = filterTest([/font-face/]);
+			const css = filterTest([/font-face/]);
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.not.contain('font-face');
@@ -129,14 +130,14 @@ describe('Module', function(){
 			expect(err).to.not.exist();
 		}
 	});
-	it('should remove types with function matcher', function () {
+	it('should remove types with function matcher', () => {
 		function filter(context,value,obj) {
 			expect(obj).to.have.ownProperty('type');
 			return context === 'type' && /font-face/.test(value);
 		}
 
 		try {
-			var css = filterTest([filter]);
+			const css = filterTest([filter]);
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.not.contain('font-face');
@@ -150,14 +151,14 @@ describe('Module', function(){
 	});
 
 
-	it('should remove empty selectors ', function () {
+	it('should remove empty selectors ', () => {
 		function filter(context,value,obj) {
 			expect(obj).to.have.ownProperty('type');
 			return obj.type === 'declaration' && (obj.property === 'width' || obj.property === 'background' );
 		}
 
 		try {
-			var css = filterTest(filter);
+			const css = filterTest(filter);
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
@@ -169,9 +170,9 @@ describe('Module', function(){
 		}
 	});
 
-	it('should remove selectors specified by RegExp', function () {
+	it('should remove selectors specified by RegExp', () => {
 		try {
-			var css = filterTest([/awesome/]);
+			const css = filterTest([/awesome/]);
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
@@ -183,9 +184,9 @@ describe('Module', function(){
 		}
 	});
 
-	it('should remove selectors from media queries', function () {
+	it('should remove selectors from media queries', () => {
 		try {
-			var css = filterTest([/main/]);
+			const css = filterTest([/main/]);
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
@@ -197,9 +198,9 @@ describe('Module', function(){
 		}
 	});
 
-	it('should remove selectors for string', function () {
+	it('should remove selectors for string', () => {
 		try {
-			var css = filterTest(['main h1 > p']);
+			const css = filterTest(['main h1 > p']);
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
@@ -210,14 +211,14 @@ describe('Module', function(){
 			expect(err).to.not.exist();
 		}
 	});
-	it('should remove selector with function matcher', function () {
+	it('should remove selector with function matcher', () => {
 		function filter(context,value,obj) {
 			expect(obj).to.have.ownProperty('type');
 			return context === 'selector' && value === 'main h1 > p';
 		}
 
 		try {
-			var css = filterTest(filter);
+			const css = filterTest(filter);
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
@@ -229,9 +230,9 @@ describe('Module', function(){
 		}
 	});
 
-	it('should remove declarations if value matches RegExp', function () {
+	it('should remove declarations if value matches RegExp', () => {
 		try {
-			var css = filterTest([/url\(/]);
+			const css = filterTest([/url\(/]);
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
@@ -244,9 +245,9 @@ describe('Module', function(){
 		}
 	});
 
-	it('should remove declarations if property matches RegExp', function () {
+	it('should remove declarations if property matches RegExp', () => {
 		try {
-			var css = filterTest([/ackgrou/]);
+			const css = filterTest([/ackgrou/]);
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
@@ -259,9 +260,9 @@ describe('Module', function(){
 		}
 	});
 
-	it('should remove declarations if value matches string', function () {
+	it('should remove declarations if value matches string', () => {
 		try {
-			var css = filterTest(['url(\'/myImage.jpg\')']);
+			const css = filterTest(['url(\'/myImage.jpg\')']);
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
@@ -274,14 +275,14 @@ describe('Module', function(){
 		}
 	});
 
-	it('should remove declarations with function matcher', function () {
+	it('should remove declarations with function matcher', () => {
 		function filter(context,value,obj) {
 			expect(obj).to.have.ownProperty('type');
 			return context === 'declarationValue' && /url/.test(value);
 		}
 
 		try {
-			var css = filterTest(filter);
+			const css = filterTest(filter);
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
@@ -294,9 +295,9 @@ describe('Module', function(){
 		}
 	});
 
-	it('should remove media if it matches string', function () {
+	it('should remove media if it matches string', () => {
 		try {
-			var css = filterTest(['only print']);
+			const css = filterTest(['only print']);
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
@@ -310,9 +311,9 @@ describe('Module', function(){
 		}
 	});
 
-	it('should remove media if it matches regexp', function () {
+	it('should remove media if it matches regexp', () => {
 		try {
-			var css = filterTest([/print/]);
+			const css = filterTest([/print/]);
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
@@ -326,14 +327,14 @@ describe('Module', function(){
 		}
 	});
 
-	it('should remove media with function matcher', function () {
+	it('should remove media with function matcher', () => {
 		function filter(context,value,obj) {
 			expect(obj).to.have.ownProperty('type');
 			return context === 'media' && /print/.test(value);
 		}
 
 		try {
-			var css = filterTest([filter]);
+			const css = filterTest([filter]);
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
@@ -348,23 +349,23 @@ describe('Module', function(){
 	});
 });
 
-describe('CLI', function(){
+describe('CLI', () => {
 	// empty stdout on appveyor? runs correct on manual test with Windows 7
-	skipWin('should return the version', function (done) {
-		execFile('node', [path.join(__dirname, '../', pkg.bin.filtercss), '--version', '--no-update-notifier'], function(error, stdout){
+	skipWin('should return the version', done => {
+		execFile('node', [path.join(__dirname, '../', pkg.bin.filtercss), '--version', '--no-update-notifier'], (error, stdout) => {
 			expect(stdout.replace(/\r\n|\n/g, '')).to.eql(pkg.version);
 			done();
 		});
 	});
 
-	it('should work well with the target stylesheet file passed as an option', function (done) {
-		var cp = execFile('node', [
+	it('should work well with the target stylesheet file passed as an option', done => {
+		const cp = execFile('node', [
 			path.join(__dirname, '../', pkg.bin.filtercss),
 			'test/fixtures/test.css',
 			'--ignore', '/main/'
 		]);
 
-		cp.stdout.on('data', function (css) {
+		cp.stdout.on('data', css => {
 			if (css instanceof Buffer) {
 				css = css.toString('utf8');
 			}
@@ -380,10 +381,10 @@ describe('CLI', function(){
 	});
 
 	// pipes don't work on windows
-	skipWin('should work well with the target stylesheet file piped to filtercss', function (done) {
-		var cp = exec('cat test/fixtures/test.css | node ' + path.join(__dirname, '../', pkg.bin.filtercss) + ' --ignore @font-face');
+	skipWin('should work well with the target stylesheet file piped to filtercss', done => {
+		const cp = exec(`cat test/fixtures/test.css | node ${path.join(__dirname, '../', pkg.bin.filtercss)} --ignore @font-face`);
 
-		cp.stdout.on('data', function (css) {
+		cp.stdout.on('data', css => {
 			if (css instanceof Buffer) {
 				css = css.toString('utf8');
 			}
@@ -397,14 +398,14 @@ describe('CLI', function(){
 		});
 	});
 
-	it('should default filter options to true', function (done) {
-		var cp = execFile('node', [
+	it('should default filter options to true', done => {
+		const cp = execFile('node', [
 			path.join(__dirname, '../', pkg.bin.filtercss),
 			'test/fixtures/test.css',
 			'--ignore', '/.*/'
 		]);
 
-		cp.stdout.on('data', function (css) {
+		cp.stdout.on('data', css => {
 			if (css instanceof Buffer) {
 				css = css.toString('utf8');
 			}
@@ -419,14 +420,14 @@ describe('CLI', function(){
 
 	});
 
-	it('should consider ignore options ', function (done) {
-		var cp = execFile('node', [
+	it('should consider ignore options ', done => {
+		const cp = execFile('node', [
 			path.join(__dirname, '../', pkg.bin.filtercss),
 			'test/fixtures/test.css',
 			'--ignore', '/.*/','-STPVM'
 		]);
 
-		cp.stdout.on('data', function (css) {
+		cp.stdout.on('data', css => {
 			if (css instanceof Buffer) {
 				css = css.toString('utf8');
 			}

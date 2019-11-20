@@ -1,9 +1,10 @@
 'use strict';
-var _ = require('lodash');
-var fs = require('fs');
-var css = require('css');
 
-var _default = {
+const _ = require('lodash');
+const fs = require('fs');
+const css = require('css');
+
+const _default = {
 	matchSelectors: true,
 	matchTypes: true,
 	matchDeclarationProperties: true,
@@ -32,8 +33,8 @@ function _matcher(ignores, identifier, node, pluck) {
 		return element;
 	}
 
-	return function (element) {
-		for (var i = 0; i < ignores.length; ++i) {
+	return element => {
+		for (let i = 0; i < ignores.length; ++i) {
 			if (_.isFunction(ignores[i]) && ignores[i](identifier, getValue(element), node || element)) {
 				return true;
 			}
@@ -59,12 +60,12 @@ function _matcher(ignores, identifier, node, pluck) {
  */
 function reduceRules(ignore, opts) {
 
-	var matcher = _.partial(_matcher, ignore);
+	const matcher = _.partial(_matcher, ignore);
 
 
 	return function reducer(rules, rule) {
 		// check if whole type is ignored
-		if (opts.matchTypes && matcher('type', rule)('@' + rule.type)) {
+		if (opts.matchTypes && matcher('type', rule)(`@${rule.type}`)) {
 			return rules;
 		}
 
@@ -119,7 +120,7 @@ function api(stylesheet, ignore, opts) {
 		ignore = [ignore];
 	}
 
-	var sheet;
+	let sheet;
 	try {
 		sheet = css.parse(read(stylesheet));
 	} catch (err) {
