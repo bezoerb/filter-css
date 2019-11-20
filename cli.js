@@ -3,9 +3,7 @@
 const meow = require('meow');
 const _ = require('lodash');
 const stdin = require('get-stdin');
-const updateNotifier = require('update-notifier');
 const filterCss = require('./');
-const pkg = require('./package.json');
 let ok;
 
 const help = `
@@ -32,10 +30,6 @@ const cli = meow(
 		}
 	}
 );
-
-if (cli.flags['update-notifier'] !== false) {
-	updateNotifier({pkg: pkg}).notify();
-}
 
 function go(data) {
 	ok = true;

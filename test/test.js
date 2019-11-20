@@ -352,7 +352,7 @@ describe('Module', () => {
 describe('CLI', () => {
 	// empty stdout on appveyor? runs correct on manual test with Windows 7
 	skipWin('should return the version', done => {
-		execFile('node', [path.join(__dirname, '../', pkg.bin.filtercss), '--version', '--no-update-notifier'], (error, stdout) => {
+		execFile('node', [path.join(__dirname, '../', pkg.bin.filtercss), '--version'], (error, stdout) => {
 			expect(stdout.replace(/\r\n|\n/g, '')).to.eql(pkg.version);
 			done();
 		});
