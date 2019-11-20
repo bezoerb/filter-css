@@ -13,7 +13,9 @@
     "node": ">=6"
   },
   "scripts": {
-    "test": "jshint . && mocha test/*.js"
+    "lint": "jshint .",
+    "mocha": "mocha",
+    "test": "npm run lint && npm run mocha"
   },
   "files": [
     "index.js",
