@@ -14,19 +14,36 @@ Options:
   -S, --skipSelectors Don't match selectors
   -T, --skipTypes Don't match types
   -P, --skipDeclarationProperties Don't match declaration properties
-  -V, --skiphDeclarationValues Don't match declaration values
+  -V, --skipDeclarationValues Don't match declaration values
   -M, --skipMedia Don't match media
 `;
 
 const cli = meow(
 	help, {
-		alias: {
-			i: 'ignore',
-			S: 'skipSelectors',
-			T: 'skipTypes',
-			P: 'skipDeclarationProperties',
-			V: 'skiphDeclarationValues',
-			M: 'skipMedia'
+		flags: {
+			ignore: {
+				alias: 'i'
+			},
+			skipSelectors: {
+				type: 'boolean',
+				alias: 'S'
+			},
+			skipTypes: {
+				type: 'boolean',
+				alias: 'T'
+			},
+			skipDeclarationProperties: {
+				type: 'boolean',
+				alias: 'P'
+			},
+			skipDeclarationValues: {
+				type: 'boolean',
+				alias: 'V'
+			},
+			skipMedia: {
+				type: 'boolean',
+				alias: 'M'
+			}
 		}
 	}
 );
@@ -56,7 +73,7 @@ function go(data) {
 		matchSelectors: !cli.flags.skipSelectors,
 		matchTypes: !cli.flags.skipTypes,
 		matchDeclarationProperties: !cli.flags.skipDeclarationProperties,
-		matchDeclarationValues: !cli.flags.skiphDeclarationValues,
+		matchDeclarationValues: !cli.flags.skipDeclarationValues,
 		matchMedia: !cli.flags.skipMedia
 	});
 
