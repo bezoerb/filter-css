@@ -10,7 +10,8 @@ const {expect} = require('chai');
 const pkg = require('../package.json');
 const filterCss = require('..');
 
-const skipWin = process.platform === 'win32' ? it.skip : it;
+const CAT = process.platform === 'win32' ? 'type' : 'cat';
+
 const filterTest = _.partial(filterCss, 'test/fixtures/test.css');
 
 function read(file) {
@@ -349,12 +350,15 @@ describe('Module', () => {
 });
 
 describe('CLI', () => {
-	// empty stdout on appveyor? runs correct on manual test with Windows 7
-	skipWin('should return the version', done => {
-		execFile('node', [path.join(__dirname, '../', pkg.bin.filtercss), '--version'], (error, stdout) => {
-			expect(stdout.replace(/\r\n|\n/g, '')).to.eql(pkg.version);
-			done();
-		});
+	it('should return the version', done => {
+		execFile(
+			'node',
+			[path.join(__dirname, '../', pkg.bin.filtercss), '--version'],
+			(error, stdout) => {
+				expect(stdout.trim()).to.equal(pkg.version);
+				done();
+			}
+		);
 	});
 
 	it('should work well with the target stylesheet file passed as an option', done => {
@@ -380,9 +384,8 @@ describe('CLI', () => {
 		});
 	});
 
-	// pipes don't work on windows
-	skipWin('should work well with the target stylesheet file piped to filtercss', done => {
-		const cp = exec(`cat test/fixtures/test.css | node ${path.join(__dirname, '../', pkg.bin.filtercss)} --ignore @font-face`);
+	it('should work well with the target stylesheet file piped to filtercss', done => {
+		const cp = exec(`${CAT} ${path.normalize('test/fixtures/test.css')} | node ${path.join(__dirname, '../', pkg.bin.filtercss)} --ignore @font-face`);
 
 		cp.stdout.on('data', css => {
 			if (css instanceof Buffer) {
