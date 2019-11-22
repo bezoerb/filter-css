@@ -20,6 +20,14 @@ function read(file) {
 	return fs.readFileSync(file, {encoding: 'utf8'});
 }
 
+function getValue(element, pluck) {
+	if (pluck) {
+		return result(element, pluck);
+	}
+
+	return element;
+}
+
 /**
  * Identify ignored selectors
  * @param {array} ignores
@@ -29,26 +37,18 @@ function read(file) {
  * @returns {Function}
  */
 function _matcher(ignores, identifier, node, pluck) {
-	function getValue(element) {
-		if (pluck) {
-			return result(element, pluck);
-		}
-
-		return element;
-	}
-
 	return element => {
 		for (let i = 0; i < ignores.length; ++i) {
-			if (isFunction(ignores[i]) && ignores[i](identifier, getValue(element), node || element)) {
+			if (isFunction(ignores[i]) && ignores[i](identifier, getValue(element, pluck), node || element)) {
 				return true;
 			}
 
 			/* If ignore is RegExp and matches selector ... */
-			if (isRegExp(ignores[i]) && ignores[i].test(getValue(element))) {
+			if (isRegExp(ignores[i]) && ignores[i].test(getValue(element, pluck))) {
 				return true;
 			}
 
-			if (ignores[i] === getValue(element)) {
+			if (ignores[i] === getValue(element, pluck)) {
 				return true;
 			}
 		}
