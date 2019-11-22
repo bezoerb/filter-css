@@ -1,7 +1,7 @@
 'use strict';
 
-const _ = require('lodash');
 const fs = require('fs');
+const _ = require('lodash');
 const css = require('css');
 
 const _default = {
@@ -16,7 +16,6 @@ function read(file) {
 	return fs.readFileSync(file, {encoding: 'utf8'});
 }
 
-
 /**
  * Identify ignored selectors
  * @param {array} ignores
@@ -30,6 +29,7 @@ function _matcher(ignores, identifier, node, pluck) {
 		if (pluck) {
 			return _.result(element, pluck);
 		}
+
 		return element;
 	}
 
@@ -43,14 +43,15 @@ function _matcher(ignores, identifier, node, pluck) {
 			if (_.isRegExp(ignores[i]) && ignores[i].test(getValue(element))) {
 				return true;
 			}
+
 			if (ignores[i] === getValue(element)) {
 				return true;
 			}
 		}
+
 		return false;
 	};
 }
-
 
 /**
  *
@@ -59,9 +60,7 @@ function _matcher(ignores, identifier, node, pluck) {
  * @param opts
  */
 function reduceRules(ignore, opts) {
-
 	const matcher = _.partial(_matcher, ignore);
-
 
 	return function reducer(rules, rule) {
 		// check if whole type is ignored
@@ -74,7 +73,6 @@ function reduceRules(ignore, opts) {
 			if (opts.matchMedia && matcher('media', rule)(rule.media)) {
 				return rules;
 			}
-
 
 			rule.rules = _.reduce(rule.rules || [], reducer, []);
 
@@ -111,9 +109,7 @@ function reduceRules(ignore, opts) {
 	};
 }
 
-
 function api(stylesheet, ignore, opts) {
-
 	opts = _.defaults(opts || {}, _default);
 
 	if (!_.isArray(ignore)) {
@@ -123,7 +119,7 @@ function api(stylesheet, ignore, opts) {
 	let sheet;
 	try {
 		sheet = css.parse(read(stylesheet));
-	} catch (err) {
+	} catch (error) {
 		sheet = css.parse(stylesheet);
 	}
 

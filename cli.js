@@ -3,7 +3,8 @@
 const meow = require('meow');
 const _ = require('lodash');
 const stdin = require('get-stdin');
-const filterCss = require('./');
+const filterCss = require('.');
+
 let ok;
 
 const help = `
@@ -53,13 +54,15 @@ function go(data) {
 	if (_.isString(cli.flags.ignore) || _.isRegExp(cli.flags.ignore)) {
 		cli.flags.ignore = [cli.flags.ignore];
 	}
+
 	const ignores = _.map(cli.flags.ignore || [], ignore => {
 		// check regex
 		const match = ignore.match(/^\/(.*)\/([igmy]+)?$/);
 
 		if (match) {
-			return new RegExp(match[1],match[2]);
+			return new RegExp(match[1], match[2]);
 		}
+
 		return ignore;
 	});
 
@@ -68,8 +71,7 @@ function go(data) {
 		return;
 	}
 
-
-	const diff = filterCss(data,ignores, {
+	const diff = filterCss(data, ignores, {
 		matchSelectors: !cli.flags.skipSelectors,
 		matchTypes: !cli.flags.skipTypes,
 		matchDeclarationProperties: !cli.flags.skipDeclarationProperties,
@@ -85,9 +87,9 @@ function die() {
 	if (ok) {
 		return;
 	}
+
 	cli.showHelp();
 }
-
 
 if (cli.input[0]) {
 	go(cli.input[0]);

@@ -1,26 +1,26 @@
+/* eslint-env mocha */
+
 'use strict';
 
-const expect = require('chai').expect;
 const fs = require('fs');
-const _ = require('lodash');
 const path = require('path');
+const {exec, execFile} = require('child_process');
+const _ = require('lodash');
+const {expect} = require('chai');
 const pkg = require('../package.json');
-const skipWin = process.platform === 'win32'? it.skip : it;
-const exec = require('child_process').exec;
-const execFile = require('child_process').execFile;
-const filterCss = require('../');
+const filterCss = require('..');
+
+const skipWin = process.platform === 'win32' ? it.skip : it;
 const filterTest = _.partial(filterCss, 'test/fixtures/test.css');
 
-function read (file) {
-	return fs.readFileSync(file, { encoding: 'utf8' });
+function read(file) {
+	return fs.readFileSync(file, {encoding: 'utf8'});
 }
-
-
 
 describe('Module', () => {
 	it('should work with css string', () => {
 		try {
-			const css = filterCss(read('test/fixtures/test.css'),[/body/]);
+			const css = filterCss(read('test/fixtures/test.css'), [/body/]);
 			expect(css).to.not.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
@@ -28,8 +28,8 @@ describe('Module', () => {
 			expect(css).to.contain('main h1 > p');
 			expect(css).to.contain('.test');
 			expect(css).to.contain('only print');
-		} catch (err) {
-			expect(err).to.not.exist();
+		} catch (error) {
+			expect(error).to.not.exist();
 		}
 	});
 
@@ -43,13 +43,13 @@ describe('Module', () => {
 			expect(css).to.contain('main h1 > p');
 			expect(css).to.contain('.test');
 			expect(css).to.contain('only print');
-		} catch (err) {
-			expect(err).to.not.exist();
+		} catch (error) {
+			expect(error).to.not.exist();
 		}
 	});
 
 	it('should consider options', () => {
-		const css = filterTest([/.*/],{
+		const css = filterTest([/.*/], {
 			matchSelectors: false,
 			matchTypes: false,
 			matchDeclarationProperties: false,
@@ -66,7 +66,7 @@ describe('Module', () => {
 	});
 
 	it('should remove everything', () => {
-		const css = filterTest([/.*/],{
+		const css = filterTest([/.*/], {
 			matchSelectors: true,
 			matchTypes: true,
 			matchDeclarationProperties: true,
@@ -81,7 +81,7 @@ describe('Module', () => {
 		expect(css).to.not.contain('.test');
 		expect(css).to.not.contain('only print');
 
-		console.log('CSS:',css);
+		console.log('CSS:', css);
 	});
 
 	it('should consider "matchDeclarationValues" option', () => {
@@ -96,8 +96,8 @@ describe('Module', () => {
 			expect(css).to.contain('main h1 > p');
 			expect(css).to.contain('.test');
 			expect(css).to.contain('/myImage.jpg');
-		} catch (err) {
-			expect(err).to.not.exist();
+		} catch (error) {
+			expect(error).to.not.exist();
 		}
 	});
 
@@ -111,8 +111,8 @@ describe('Module', () => {
 			expect(css).to.contain('main h1 > p');
 			expect(css).to.contain('.test');
 			expect(css).to.contain('only print');
-		} catch (err) {
-			expect(err).to.not.exist();
+		} catch (error) {
+			expect(error).to.not.exist();
 		}
 	});
 
@@ -126,12 +126,12 @@ describe('Module', () => {
 			expect(css).to.contain('main h1 > p');
 			expect(css).to.contain('.test');
 			expect(css).to.contain('only print');
-		} catch (err) {
-			expect(err).to.not.exist();
+		} catch (error) {
+			expect(error).to.not.exist();
 		}
 	});
 	it('should remove types with function matcher', () => {
-		function filter(context,value,obj) {
+		function filter(context, value, obj) {
 			expect(obj).to.have.ownProperty('type');
 			return context === 'type' && /font-face/.test(value);
 		}
@@ -145,16 +145,15 @@ describe('Module', () => {
 			expect(css).to.contain('main h1 > p');
 			expect(css).to.contain('.test');
 			expect(css).to.contain('only print');
-		} catch (err) {
-			expect(err).to.not.exist();
+		} catch (error) {
+			expect(error).to.not.exist();
 		}
 	});
 
-
 	it('should remove empty selectors ', () => {
-		function filter(context,value,obj) {
+		function filter(context, value, obj) {
 			expect(obj).to.have.ownProperty('type');
-			return obj.type === 'declaration' && (obj.property === 'width' || obj.property === 'background' );
+			return obj.type === 'declaration' && (obj.property === 'width' || obj.property === 'background');
 		}
 
 		try {
@@ -165,8 +164,8 @@ describe('Module', () => {
 			expect(css).to.not.contain('.my.awesome.selector');
 			expect(css).to.contain('main h1 > p');
 			expect(css).to.contain('.test');
-		} catch (err) {
-			expect(err).to.not.exist();
+		} catch (error) {
+			expect(error).to.not.exist();
 		}
 	});
 
@@ -179,8 +178,8 @@ describe('Module', () => {
 			expect(css).to.not.contain('.my.awesome.selector');
 			expect(css).to.contain('main h1 > p');
 			expect(css).to.contain('.test');
-		} catch (err) {
-			expect(err).to.not.exist();
+		} catch (error) {
+			expect(error).to.not.exist();
 		}
 	});
 
@@ -193,8 +192,8 @@ describe('Module', () => {
 			expect(css).to.contain('.my.awesome.selector');
 			expect(css).to.not.contain('main h1 > p');
 			expect(css).to.contain('.test');
-		} catch (err) {
-			expect(err).to.not.exist();
+		} catch (error) {
+			expect(error).to.not.exist();
 		}
 	});
 
@@ -207,12 +206,12 @@ describe('Module', () => {
 			expect(css).to.contain('.my.awesome.selector');
 			expect(css).to.not.contain('main h1 > p');
 			expect(css).to.contain('.test');
-		} catch (err) {
-			expect(err).to.not.exist();
+		} catch (error) {
+			expect(error).to.not.exist();
 		}
 	});
 	it('should remove selector with function matcher', () => {
-		function filter(context,value,obj) {
+		function filter(context, value, obj) {
 			expect(obj).to.have.ownProperty('type');
 			return context === 'selector' && value === 'main h1 > p';
 		}
@@ -225,8 +224,8 @@ describe('Module', () => {
 			expect(css).to.contain('.my.awesome.selector');
 			expect(css).to.not.contain('main h1 > p');
 			expect(css).to.contain('.test');
-		} catch (err) {
-			expect(err).to.not.exist();
+		} catch (error) {
+			expect(error).to.not.exist();
 		}
 	});
 
@@ -240,8 +239,8 @@ describe('Module', () => {
 			expect(css).to.contain('main h1 > p');
 			expect(css).to.contain('.test');
 			expect(css).to.not.contain('/myImage.jpg');
-		} catch (err) {
-			expect(err).to.not.exist();
+		} catch (error) {
+			expect(error).to.not.exist();
 		}
 	});
 
@@ -255,8 +254,8 @@ describe('Module', () => {
 			expect(css).to.contain('main h1 > p');
 			expect(css).to.contain('.test');
 			expect(css).to.not.contain('/myImage.jpg');
-		} catch (err) {
-			expect(err).to.not.exist();
+		} catch (error) {
+			expect(error).to.not.exist();
 		}
 	});
 
@@ -270,13 +269,13 @@ describe('Module', () => {
 			expect(css).to.contain('main h1 > p');
 			expect(css).to.contain('.test');
 			expect(css).to.not.contain('/myImage.jpg');
-		} catch (err) {
-			expect(err).to.not.exist();
+		} catch (error) {
+			expect(error).to.not.exist();
 		}
 	});
 
 	it('should remove declarations with function matcher', () => {
-		function filter(context,value,obj) {
+		function filter(context, value, obj) {
 			expect(obj).to.have.ownProperty('type');
 			return context === 'declarationValue' && /url/.test(value);
 		}
@@ -290,8 +289,8 @@ describe('Module', () => {
 			expect(css).to.contain('main h1 > p');
 			expect(css).to.contain('.test');
 			expect(css).to.not.contain('/myImage.jpg');
-		} catch (err) {
-			expect(err).to.not.exist();
+		} catch (error) {
+			expect(error).to.not.exist();
 		}
 	});
 
@@ -306,8 +305,8 @@ describe('Module', () => {
 			expect(css).to.contain('.test');
 			expect(css).to.contain('/myImage.jpg');
 			expect(css).to.not.contain('only print');
-		} catch (err) {
-			expect(err).to.not.exist();
+		} catch (error) {
+			expect(error).to.not.exist();
 		}
 	});
 
@@ -322,13 +321,13 @@ describe('Module', () => {
 			expect(css).to.contain('.test');
 			expect(css).to.contain('/myImage.jpg');
 			expect(css).to.not.contain('only print');
-		} catch (err) {
-			expect(err).to.not.exist();
+		} catch (error) {
+			expect(error).to.not.exist();
 		}
 	});
 
 	it('should remove media with function matcher', () => {
-		function filter(context,value,obj) {
+		function filter(context, value, obj) {
 			expect(obj).to.have.ownProperty('type');
 			return context === 'media' && /print/.test(value);
 		}
@@ -343,8 +342,8 @@ describe('Module', () => {
 			expect(css).to.contain('.test');
 			expect(css).to.contain('/myImage.jpg');
 			expect(css).to.not.contain('only print');
-		} catch (err) {
-			expect(err).to.not.exist();
+		} catch (error) {
+			expect(error).to.not.exist();
 		}
 	});
 });
@@ -362,13 +361,15 @@ describe('CLI', () => {
 		const cp = execFile('node', [
 			path.join(__dirname, '../', pkg.bin.filtercss),
 			'test/fixtures/test.css',
-			'--ignore', '/main/'
+			'--ignore',
+			'/main/'
 		]);
 
 		cp.stdout.on('data', css => {
 			if (css instanceof Buffer) {
 				css = css.toString('utf8');
 			}
+
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
@@ -377,7 +378,6 @@ describe('CLI', () => {
 			expect(css).to.contain('.test');
 			done();
 		});
-
 	});
 
 	// pipes don't work on windows
@@ -388,6 +388,7 @@ describe('CLI', () => {
 			if (css instanceof Buffer) {
 				css = css.toString('utf8');
 			}
+
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.not.contain('font-face');
@@ -402,13 +403,15 @@ describe('CLI', () => {
 		const cp = execFile('node', [
 			path.join(__dirname, '../', pkg.bin.filtercss),
 			'test/fixtures/test.css',
-			'--ignore', '/.*/'
+			'--ignore',
+			'/.*/'
 		]);
 
 		cp.stdout.on('data', css => {
 			if (css instanceof Buffer) {
 				css = css.toString('utf8');
 			}
+
 			expect(css).to.not.contain('body');
 			expect(css).to.not.contain('html');
 			expect(css).to.not.contain('font-face');
@@ -417,20 +420,22 @@ describe('CLI', () => {
 			expect(css).to.not.contain('.test');
 			done();
 		});
-
 	});
 
 	it('should consider ignore options ', done => {
 		const cp = execFile('node', [
 			path.join(__dirname, '../', pkg.bin.filtercss),
 			'test/fixtures/test.css',
-			'--ignore', '/.*/','-STPVM'
+			'--ignore',
+			'/.*/',
+			'-STPVM'
 		]);
 
 		cp.stdout.on('data', css => {
 			if (css instanceof Buffer) {
 				css = css.toString('utf8');
 			}
+
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
@@ -439,6 +444,5 @@ describe('CLI', () => {
 			expect(css).to.contain('.test');
 			done();
 		});
-
 	});
 });
