@@ -6,12 +6,14 @@ const fs = require('fs');
 const path = require('path');
 const {exec, execFile} = require('child_process');
 const {expect} = require('chai');
-const pkg = require('../package.json');
+const {bin, version} = require('../package.json');
 const filterCss = require('..');
 
+const filterCssBin = path.join(__dirname, '../', bin.filtercss);
+const testFile = 'test/fixtures/test.css';
 const CAT = process.platform === 'win32' ? 'type' : 'cat';
 
-const filterTest = (...args) => filterCss('test/fixtures/test.css', ...args);
+const filterTest = (...args) => filterCss(testFile, ...args);
 
 function read(file) {
 	return fs.readFileSync(file, {encoding: 'utf8'});
@@ -20,7 +22,7 @@ function read(file) {
 describe('Module', () => {
 	it('should work with css string', () => {
 		try {
-			const css = filterCss(read('test/fixtures/test.css'), [/body/]);
+			const css = filterCss(read(testFile), [/body/]);
 			expect(css).to.not.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
@@ -80,8 +82,7 @@ describe('Module', () => {
 		expect(css).to.not.contain('main h1 > p');
 		expect(css).to.not.contain('.test');
 		expect(css).to.not.contain('only print');
-
-		console.log('CSS:', css);
+		expect(css.trim().length).to.equal(0);
 	});
 
 	it('should consider "matchDeclarationValues" option', () => {
@@ -352,21 +353,23 @@ describe('CLI', () => {
 	it('should return the version', done => {
 		execFile(
 			'node',
-			[path.join(__dirname, '../', pkg.bin.filtercss), '--version'],
+			[filterCssBin, '--version'],
 			(error, stdout) => {
-				expect(stdout.trim()).to.equal(pkg.version);
+				expect(stdout.trim()).to.equal(version);
 				done();
 			}
 		);
 	});
 
 	it('should work well with the target stylesheet file passed as an option', done => {
-		const cp = execFile('node', [
-			path.join(__dirname, '../', pkg.bin.filtercss),
-			'test/fixtures/test.css',
-			'--ignore',
-			'/main/'
-		]);
+		const cp = execFile(
+			'node', [
+				filterCssBin,
+				testFile,
+				'--ignore',
+				'/main/'
+			]
+		);
 
 		cp.stdout.on('data', css => {
 			if (css instanceof Buffer) {
@@ -384,7 +387,7 @@ describe('CLI', () => {
 	});
 
 	it('should work well with the target stylesheet file piped to filtercss', done => {
-		const cp = exec(`${CAT} ${path.normalize('test/fixtures/test.css')} | node ${path.join(__dirname, '../', pkg.bin.filtercss)} --ignore @font-face`);
+		const cp = exec(`${CAT} ${path.normalize(testFile)} | node ${filterCssBin} --ignore @font-face`);
 
 		cp.stdout.on('data', css => {
 			if (css instanceof Buffer) {
@@ -402,12 +405,14 @@ describe('CLI', () => {
 	});
 
 	it('should default filter options to true', done => {
-		const cp = execFile('node', [
-			path.join(__dirname, '../', pkg.bin.filtercss),
-			'test/fixtures/test.css',
-			'--ignore',
-			'/.*/'
-		]);
+		const cp = execFile(
+			'node', [
+				filterCssBin,
+				testFile,
+				'--ignore',
+				'/.*/'
+			]
+		);
 
 		cp.stdout.on('data', css => {
 			if (css instanceof Buffer) {
@@ -425,13 +430,15 @@ describe('CLI', () => {
 	});
 
 	it('should consider ignore options ', done => {
-		const cp = execFile('node', [
-			path.join(__dirname, '../', pkg.bin.filtercss),
-			'test/fixtures/test.css',
-			'--ignore',
-			'/.*/',
-			'-STPVM'
-		]);
+		const cp = execFile(
+			'node', [
+				filterCssBin,
+				testFile,
+				'--ignore',
+				'/.*/',
+				'-STPVM'
+			]
+		);
 
 		cp.stdout.on('data', css => {
 			if (css instanceof Buffer) {
