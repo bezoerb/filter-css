@@ -1,8 +1,12 @@
 'use strict';
 
 const fs = require('fs');
-const _ = require('lodash');
 const css = require('css');
+const defaults = require('lodash.defaults');
+const isFunction = require('lodash.isfunction');
+const isRegExp = require('lodash.isregexp');
+const reject = require('lodash.reject');
+const result = require('lodash.result');
 
 const _default = {
 	matchSelectors: true,
@@ -27,7 +31,7 @@ function read(file) {
 function _matcher(ignores, identifier, node, pluck) {
 	function getValue(element) {
 		if (pluck) {
-			return _.result(element, pluck);
+			return result(element, pluck);
 		}
 
 		return element;
@@ -35,12 +39,12 @@ function _matcher(ignores, identifier, node, pluck) {
 
 	return element => {
 		for (let i = 0; i < ignores.length; ++i) {
-			if (_.isFunction(ignores[i]) && ignores[i](identifier, getValue(element), node || element)) {
+			if (isFunction(ignores[i]) && ignores[i](identifier, getValue(element), node || element)) {
 				return true;
 			}
 
 			/* If ignore is RegExp and matches selector ... */
-			if (_.isRegExp(ignores[i]) && ignores[i].test(getValue(element))) {
+			if (isRegExp(ignores[i]) && ignores[i].test(getValue(element))) {
 				return true;
 			}
 
@@ -60,7 +64,7 @@ function _matcher(ignores, identifier, node, pluck) {
  * @param opts
  */
 function reduceRules(ignore, opts) {
-	const matcher = _.partial(_matcher, ignore);
+	const matcher = (...args) => _matcher(ignore, ...args);
 
 	return function reducer(rules, rule) {
 		// check if whole type is ignored
@@ -74,30 +78,30 @@ function reduceRules(ignore, opts) {
 				return rules;
 			}
 
-			rule.rules = _.reduce(rule.rules || [], reducer, []);
+			rule.rules = (rule.rules || []).reduce(reducer, []);
 
-			if (_.size(rule.rules)) {
+			if (rule.rules.length > 0) {
 				rules.push(rule);
 			}
 		} else if (rule.type === 'rule') {
 			// check selector
 			if (opts.matchSelectors) {
-				rule.selectors = _.reject(rule.selectors || [], matcher('selector', rule));
+				rule.selectors = reject(rule.selectors || [], matcher('selector', rule));
 			}
 
-			if (_.size(rule.selectors)) {
+			if (rule.selectors.length > 0) {
 				// check declaration property
 				if (opts.matchDeclarationProperties) {
-					rule.declarations = _.reject(rule.declarations || [], matcher('declarationProperty', undefined, 'property'));
+					rule.declarations = reject(rule.declarations || [], matcher('declarationProperty', undefined, 'property'));
 				}
 
 				// check declaration value
 				if (opts.matchDeclarationValues) {
-					rule.declarations = _.reject(rule.declarations || [], matcher('declarationValue', undefined, 'value'));
+					rule.declarations = reject(rule.declarations || [], matcher('declarationValue', undefined, 'value'));
 				}
 
 				// add rule if something's left
-				if (_.size(rule.declarations)) {
+				if (rule.declarations.length > 0) {
 					rules.push(rule);
 				}
 			}
@@ -110,9 +114,9 @@ function reduceRules(ignore, opts) {
 }
 
 function api(stylesheet, ignore, opts) {
-	opts = _.defaults(opts || {}, _default);
+	opts = defaults(opts || {}, _default);
 
-	if (!_.isArray(ignore)) {
+	if (!Array.isArray(ignore)) {
 		ignore = [ignore];
 	}
 
@@ -123,7 +127,7 @@ function api(stylesheet, ignore, opts) {
 		sheet = css.parse(stylesheet);
 	}
 
-	sheet.stylesheet.rules = _.reduce(sheet.stylesheet.rules, reduceRules(ignore, opts), []);
+	sheet.stylesheet.rules = sheet.stylesheet.rules.reduce(reduceRules(ignore, opts), []);
 	return css.stringify(sheet);
 }
 

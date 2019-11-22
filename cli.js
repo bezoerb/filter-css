@@ -1,7 +1,8 @@
 'use strict';
 
 const meow = require('meow');
-const _ = require('lodash');
+const isString = require('lodash.isstring');
+const isRegExp = require('lodash.isregexp');
 const stdin = require('get-stdin');
 const filterCss = require('.');
 
@@ -51,11 +52,11 @@ const cli = meow(
 
 function go(data) {
 	ok = true;
-	if (_.isString(cli.flags.ignore) || _.isRegExp(cli.flags.ignore)) {
+	if (isString(cli.flags.ignore) || isRegExp(cli.flags.ignore)) {
 		cli.flags.ignore = [cli.flags.ignore];
 	}
 
-	const ignores = _.map(cli.flags.ignore || [], ignore => {
+	const ignores = (cli.flags.ignore || []).map(ignore => {
 		// check regex
 		const match = ignore.match(/^\/(.*)\/([igmy]+)?$/);
 

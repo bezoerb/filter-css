@@ -5,14 +5,13 @@
 const fs = require('fs');
 const path = require('path');
 const {exec, execFile} = require('child_process');
-const _ = require('lodash');
 const {expect} = require('chai');
 const pkg = require('../package.json');
 const filterCss = require('..');
 
 const CAT = process.platform === 'win32' ? 'type' : 'cat';
 
-const filterTest = _.partial(filterCss, 'test/fixtures/test.css');
+const filterTest = (...args) => filterCss('test/fixtures/test.css', ...args);
 
 function read(file) {
 	return fs.readFileSync(file, {encoding: 'utf8'});
