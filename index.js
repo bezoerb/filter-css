@@ -1,9 +1,14 @@
 'use strict';
-var _ = require('lodash');
-var fs = require('fs');
-var css = require('css');
 
-var _default = {
+const fs = require('fs');
+const css = require('css');
+const defaults = require('lodash.defaults');
+const isFunction = require('lodash.isfunction');
+const isRegExp = require('lodash.isregexp');
+const reject = require('lodash.reject');
+const result = require('lodash.result');
+
+const _default = {
 	matchSelectors: true,
 	matchTypes: true,
 	matchDeclarationProperties: true,
@@ -15,6 +20,13 @@ function read(file) {
 	return fs.readFileSync(file, {encoding: 'utf8'});
 }
 
+function getValue(element, pluck) {
+	if (pluck) {
+		return result(element, pluck);
+	}
+
+	return element;
+}
 
 /**
  * Identify ignored selectors
@@ -25,31 +37,25 @@ function read(file) {
  * @returns {Function}
  */
 function _matcher(ignores, identifier, node, pluck) {
-	function getValue(element) {
-		if (pluck) {
-			return _.result(element, pluck);
-		}
-		return element;
-	}
-
-	return function (element) {
-		for (var i = 0; i < ignores.length; ++i) {
-			if (_.isFunction(ignores[i]) && ignores[i](identifier, getValue(element), node || element)) {
+	return element => {
+		for (let i = 0; i < ignores.length; ++i) {
+			if (isFunction(ignores[i]) && ignores[i](identifier, getValue(element, pluck), node || element)) {
 				return true;
 			}
 
 			/* If ignore is RegExp and matches selector ... */
-			if (_.isRegExp(ignores[i]) && ignores[i].test(getValue(element))) {
+			if (isRegExp(ignores[i]) && ignores[i].test(getValue(element, pluck))) {
 				return true;
 			}
-			if (ignores[i] === getValue(element)) {
+
+			if (ignores[i] === getValue(element, pluck)) {
 				return true;
 			}
 		}
+
 		return false;
 	};
 }
-
 
 /**
  *
@@ -58,13 +64,11 @@ function _matcher(ignores, identifier, node, pluck) {
  * @param opts
  */
 function reduceRules(ignore, opts) {
-
-	var matcher = _.partial(_matcher, ignore);
-
+	const matcher = (...args) => _matcher(ignore, ...args);
 
 	return function reducer(rules, rule) {
 		// check if whole type is ignored
-		if (opts.matchTypes && matcher('type', rule)('@' + rule.type)) {
+		if (opts.matchTypes && matcher('type', rule)(`@${rule.type}`)) {
 			return rules;
 		}
 
@@ -74,31 +78,30 @@ function reduceRules(ignore, opts) {
 				return rules;
 			}
 
+			rule.rules = (rule.rules || []).reduce(reducer, []);
 
-			rule.rules = _.reduce(rule.rules || [], reducer, []);
-
-			if (_.size(rule.rules)) {
+			if (rule.rules.length > 0) {
 				rules.push(rule);
 			}
 		} else if (rule.type === 'rule') {
 			// check selector
 			if (opts.matchSelectors) {
-				rule.selectors = _.reject(rule.selectors || [], matcher('selector', rule));
+				rule.selectors = reject(rule.selectors || [], matcher('selector', rule));
 			}
 
-			if (_.size(rule.selectors)) {
+			if (rule.selectors.length > 0) {
 				// check declaration property
 				if (opts.matchDeclarationProperties) {
-					rule.declarations = _.reject(rule.declarations || [], matcher('declarationProperty', undefined, 'property'));
+					rule.declarations = reject(rule.declarations || [], matcher('declarationProperty', undefined, 'property'));
 				}
 
 				// check declaration value
 				if (opts.matchDeclarationValues) {
-					rule.declarations = _.reject(rule.declarations || [], matcher('declarationValue', undefined, 'value'));
+					rule.declarations = reject(rule.declarations || [], matcher('declarationValue', undefined, 'value'));
 				}
 
 				// add rule if something's left
-				if (_.size(rule.declarations)) {
+				if (rule.declarations.length > 0) {
 					rules.push(rule);
 				}
 			}
@@ -110,23 +113,21 @@ function reduceRules(ignore, opts) {
 	};
 }
 
-
 function api(stylesheet, ignore, opts) {
+	opts = defaults(opts || {}, _default);
 
-	opts = _.defaults(opts || {}, _default);
-
-	if (!_.isArray(ignore)) {
+	if (!Array.isArray(ignore)) {
 		ignore = [ignore];
 	}
 
-	var sheet;
+	let sheet;
 	try {
 		sheet = css.parse(read(stylesheet));
-	} catch (err) {
+	} catch (error) {
 		sheet = css.parse(stylesheet);
 	}
 
-	sheet.stylesheet.rules = _.reduce(sheet.stylesheet.rules, reduceRules(ignore, opts), []);
+	sheet.stylesheet.rules = sheet.stylesheet.rules.reduce(reduceRules(ignore, opts), []);
 	return css.stringify(sheet);
 }
 

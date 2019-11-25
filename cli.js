@@ -1,51 +1,71 @@
+#!/usr/bin/env node
+
 'use strict';
-var meow = require('meow');
-var _ = require('lodash');
-var stdin = require('get-stdin');
-var updateNotifier = require('update-notifier');
-var filterCss = require('./');
-var pkg = require('./package.json');
-var ok;
 
-var help = [
-	'Usage: filtercss <input> [<option>]',
-	'',
-	'Options:',
-	'   -i, --ignore  RegExp, selector @type to ignore',
-	'   -S, --skipSelectors Don\'t match selectors',
-	'   -T, --skipTypes Don\'t match types',
-	'   -P, --skipDeclarationProperties Don\'t match declaration properties',
-	'   -V, --skiphDeclarationValues Don\'t match declaration vakues',
-	'   -M, --skipMedia Don\'t match media'
-].join('\n');
+const meow = require('meow');
+const isString = require('lodash.isstring');
+const isRegExp = require('lodash.isregexp');
+const stdin = require('get-stdin');
+const filterCss = require('.');
 
+let ok;
 
+const help = `
+Usage: filtercss <input> [<option>]
 
-var cli = meow({help: help}, {alias: {
-	i: 'ignore',
-	S: 'skipSelectors',
-	T: 'skipTypes',
-	P: 'skipDeclarationProperties',
-	V: 'skiphDeclarationValues',
-	M: 'skipMedia'
-}});
+Options:
+  -i, --ignore RegExp, selector @type to ignore
+  -S, --skipSelectors Don't match selectors
+  -T, --skipTypes Don't match types
+  -P, --skipDeclarationProperties Don't match declaration properties
+  -V, --skipDeclarationValues Don't match declaration values
+  -M, --skipMedia Don't match media
+`;
 
-if (cli.flags['update-notifier'] !== false) {
-	updateNotifier({pkg: pkg}).notify();
-}
+const cli = meow(
+	help, {
+		flags: {
+			ignore: {
+				alias: 'i'
+			},
+			skipSelectors: {
+				type: 'boolean',
+				alias: 'S'
+			},
+			skipTypes: {
+				type: 'boolean',
+				alias: 'T'
+			},
+			skipDeclarationProperties: {
+				type: 'boolean',
+				alias: 'P'
+			},
+			skipDeclarationValues: {
+				type: 'boolean',
+				alias: 'V'
+			},
+			skipMedia: {
+				type: 'boolean',
+				alias: 'M'
+			}
+		}
+	}
+);
 
 function go(data) {
 	ok = true;
-	if (_.isString(cli.flags.ignore) || _.isRegExp(cli.flags.ignore)) {
+	if (isString(cli.flags.ignore) || isRegExp(cli.flags.ignore)) {
 		cli.flags.ignore = [cli.flags.ignore];
 	}
-	var ignores = _.map(cli.flags.ignore || [], function(ignore) {
+
+	const ignores = (cli.flags.ignore || []).map(ignore => {
 		// check regex
-		var match = ignore.match(/^\/(.*)\/([igmy]+)?$/);
+		const match = ignore.match(/^\/(.*)\/([igmy]+)?$/);
 
 		if (match) {
-			return new RegExp(match[1],match[2]);
+			return new RegExp(match[1], match[2]);
 		}
+
 		return ignore;
 	});
 
@@ -54,14 +74,14 @@ function go(data) {
 		return;
 	}
 
-
-	var diff = filterCss(data,ignores, {
+	const diff = filterCss(data, ignores, {
 		matchSelectors: !cli.flags.skipSelectors,
 		matchTypes: !cli.flags.skipTypes,
 		matchDeclarationProperties: !cli.flags.skipDeclarationProperties,
-		matchDeclarationValues: !cli.flags.skiphDeclarationValues,
+		matchDeclarationValues: !cli.flags.skipDeclarationValues,
 		matchMedia: !cli.flags.skipMedia
 	});
+
 	console.log(diff);
 	process.exit();
 }
@@ -70,9 +90,9 @@ function die() {
 	if (ok) {
 		return;
 	}
+
 	cli.showHelp();
 }
-
 
 if (cli.input[0]) {
 	go(cli.input[0]);

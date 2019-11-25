@@ -1,25 +1,28 @@
-'use strict';
-var expect = require('chai').expect;
-var fs = require('fs');
-var _ = require('lodash');
-var path = require('path');
-var pkg = require('../package.json');
-var skipWin = process.platform === 'win32'? it.skip : it;
-var exec = require('child_process').exec;
-var execFile = require('child_process').execFile;
-var filterCss = require('../');
-var filterTest = _.partial(filterCss, 'test/fixtures/test.css');
+/* eslint-env mocha */
 
-function read (file) {
-	return fs.readFileSync(file, { encoding: 'utf8' });
+'use strict';
+
+const fs = require('fs');
+const path = require('path');
+const {exec, execFile} = require('child_process');
+const {expect} = require('chai');
+const {bin, version} = require('../package.json');
+const filterCss = require('..');
+
+const filterCssBin = path.join(__dirname, '../', bin.filtercss);
+const testFile = 'test/fixtures/test.css';
+const CAT = process.platform === 'win32' ? 'type' : 'cat';
+
+const filterTest = (...args) => filterCss(testFile, ...args);
+
+function read(file) {
+	return fs.readFileSync(file, {encoding: 'utf8'});
 }
 
-
-
-describe('Module', function(){
-	it('should work with css string', function(){
+describe('Module', () => {
+	it('should work with css string', () => {
 		try {
-			var css = filterCss(read('test/fixtures/test.css'),[/body/]);
+			const css = filterCss(read(testFile), [/body/]);
 			expect(css).to.not.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
@@ -27,14 +30,14 @@ describe('Module', function(){
 			expect(css).to.contain('main h1 > p');
 			expect(css).to.contain('.test');
 			expect(css).to.contain('only print');
-		} catch (err) {
-			expect(err).to.not.exist();
+		} catch (error) {
+			expect(error).to.not.exist();
 		}
 	});
 
-	it('should work with stylesheet file', function(){
+	it('should work with stylesheet file', () => {
 		try {
-			var css = filterTest([/body/]);
+			const css = filterTest([/body/]);
 			expect(css).to.not.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
@@ -42,13 +45,13 @@ describe('Module', function(){
 			expect(css).to.contain('main h1 > p');
 			expect(css).to.contain('.test');
 			expect(css).to.contain('only print');
-		} catch (err) {
-			expect(err).to.not.exist();
+		} catch (error) {
+			expect(error).to.not.exist();
 		}
 	});
 
-	it('should consider options', function(){
-		var css = filterTest([/.*/],{
+	it('should consider options', () => {
+		const css = filterTest([/.*/], {
 			matchSelectors: false,
 			matchTypes: false,
 			matchDeclarationProperties: false,
@@ -64,8 +67,8 @@ describe('Module', function(){
 		expect(css).to.contain('only print');
 	});
 
-	it('should remove everything', function(){
-		var css = filterTest([/.*/],{
+	it('should remove everything', () => {
+		const css = filterTest([/.*/], {
 			matchSelectors: true,
 			matchTypes: true,
 			matchDeclarationProperties: true,
@@ -79,13 +82,12 @@ describe('Module', function(){
 		expect(css).to.not.contain('main h1 > p');
 		expect(css).to.not.contain('.test');
 		expect(css).to.not.contain('only print');
-
-		console.log('CSS:',css);
+		expect(css.trim().length).to.equal(0);
 	});
 
-	it('should consider "matchDeclarationValues" option', function () {
+	it('should consider "matchDeclarationValues" option', () => {
 		try {
-			var css = filterTest([/url\(/], {
+			const css = filterTest([/url\(/], {
 				matchDeclarationValues: false
 			});
 			expect(css).to.contain('body');
@@ -95,14 +97,14 @@ describe('Module', function(){
 			expect(css).to.contain('main h1 > p');
 			expect(css).to.contain('.test');
 			expect(css).to.contain('/myImage.jpg');
-		} catch (err) {
-			expect(err).to.not.exist();
+		} catch (error) {
+			expect(error).to.not.exist();
 		}
 	});
 
-	it('should remove types specified by string', function () {
+	it('should remove types specified by string', () => {
 		try {
-			var css = filterTest(['@font-face']);
+			const css = filterTest(['@font-face']);
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.not.contain('font-face');
@@ -110,14 +112,14 @@ describe('Module', function(){
 			expect(css).to.contain('main h1 > p');
 			expect(css).to.contain('.test');
 			expect(css).to.contain('only print');
-		} catch (err) {
-			expect(err).to.not.exist();
+		} catch (error) {
+			expect(error).to.not.exist();
 		}
 	});
 
-	it('should remove types specified by RegExp', function () {
+	it('should remove types specified by RegExp', () => {
 		try {
-			var css = filterTest([/font-face/]);
+			const css = filterTest([/font-face/]);
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.not.contain('font-face');
@@ -125,18 +127,18 @@ describe('Module', function(){
 			expect(css).to.contain('main h1 > p');
 			expect(css).to.contain('.test');
 			expect(css).to.contain('only print');
-		} catch (err) {
-			expect(err).to.not.exist();
+		} catch (error) {
+			expect(error).to.not.exist();
 		}
 	});
-	it('should remove types with function matcher', function () {
-		function filter(context,value,obj) {
+	it('should remove types with function matcher', () => {
+		function filter(context, value, obj) {
 			expect(obj).to.have.ownProperty('type');
 			return context === 'type' && /font-face/.test(value);
 		}
 
 		try {
-			var css = filterTest([filter]);
+			const css = filterTest([filter]);
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.not.contain('font-face');
@@ -144,94 +146,93 @@ describe('Module', function(){
 			expect(css).to.contain('main h1 > p');
 			expect(css).to.contain('.test');
 			expect(css).to.contain('only print');
-		} catch (err) {
-			expect(err).to.not.exist();
+		} catch (error) {
+			expect(error).to.not.exist();
 		}
 	});
 
-
-	it('should remove empty selectors ', function () {
-		function filter(context,value,obj) {
+	it('should remove empty selectors ', () => {
+		function filter(context, value, obj) {
 			expect(obj).to.have.ownProperty('type');
-			return obj.type === 'declaration' && (obj.property === 'width' || obj.property === 'background' );
+			return obj.type === 'declaration' && (obj.property === 'width' || obj.property === 'background');
 		}
 
 		try {
-			var css = filterTest(filter);
+			const css = filterTest(filter);
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
 			expect(css).to.not.contain('.my.awesome.selector');
 			expect(css).to.contain('main h1 > p');
 			expect(css).to.contain('.test');
-		} catch (err) {
-			expect(err).to.not.exist();
+		} catch (error) {
+			expect(error).to.not.exist();
 		}
 	});
 
-	it('should remove selectors specified by RegExp', function () {
+	it('should remove selectors specified by RegExp', () => {
 		try {
-			var css = filterTest([/awesome/]);
+			const css = filterTest([/awesome/]);
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
 			expect(css).to.not.contain('.my.awesome.selector');
 			expect(css).to.contain('main h1 > p');
 			expect(css).to.contain('.test');
-		} catch (err) {
-			expect(err).to.not.exist();
+		} catch (error) {
+			expect(error).to.not.exist();
 		}
 	});
 
-	it('should remove selectors from media queries', function () {
+	it('should remove selectors from media queries', () => {
 		try {
-			var css = filterTest([/main/]);
+			const css = filterTest([/main/]);
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
 			expect(css).to.contain('.my.awesome.selector');
 			expect(css).to.not.contain('main h1 > p');
 			expect(css).to.contain('.test');
-		} catch (err) {
-			expect(err).to.not.exist();
+		} catch (error) {
+			expect(error).to.not.exist();
 		}
 	});
 
-	it('should remove selectors for string', function () {
+	it('should remove selectors for string', () => {
 		try {
-			var css = filterTest(['main h1 > p']);
+			const css = filterTest(['main h1 > p']);
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
 			expect(css).to.contain('.my.awesome.selector');
 			expect(css).to.not.contain('main h1 > p');
 			expect(css).to.contain('.test');
-		} catch (err) {
-			expect(err).to.not.exist();
+		} catch (error) {
+			expect(error).to.not.exist();
 		}
 	});
-	it('should remove selector with function matcher', function () {
-		function filter(context,value,obj) {
+	it('should remove selector with function matcher', () => {
+		function filter(context, value, obj) {
 			expect(obj).to.have.ownProperty('type');
 			return context === 'selector' && value === 'main h1 > p';
 		}
 
 		try {
-			var css = filterTest(filter);
+			const css = filterTest(filter);
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
 			expect(css).to.contain('.my.awesome.selector');
 			expect(css).to.not.contain('main h1 > p');
 			expect(css).to.contain('.test');
-		} catch (err) {
-			expect(err).to.not.exist();
+		} catch (error) {
+			expect(error).to.not.exist();
 		}
 	});
 
-	it('should remove declarations if value matches RegExp', function () {
+	it('should remove declarations if value matches RegExp', () => {
 		try {
-			var css = filterTest([/url\(/]);
+			const css = filterTest([/url\(/]);
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
@@ -239,14 +240,14 @@ describe('Module', function(){
 			expect(css).to.contain('main h1 > p');
 			expect(css).to.contain('.test');
 			expect(css).to.not.contain('/myImage.jpg');
-		} catch (err) {
-			expect(err).to.not.exist();
+		} catch (error) {
+			expect(error).to.not.exist();
 		}
 	});
 
-	it('should remove declarations if property matches RegExp', function () {
+	it('should remove declarations if property matches RegExp', () => {
 		try {
-			var css = filterTest([/ackgrou/]);
+			const css = filterTest([/ackgrou/]);
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
@@ -254,14 +255,14 @@ describe('Module', function(){
 			expect(css).to.contain('main h1 > p');
 			expect(css).to.contain('.test');
 			expect(css).to.not.contain('/myImage.jpg');
-		} catch (err) {
-			expect(err).to.not.exist();
+		} catch (error) {
+			expect(error).to.not.exist();
 		}
 	});
 
-	it('should remove declarations if value matches string', function () {
+	it('should remove declarations if value matches string', () => {
 		try {
-			var css = filterTest(['url(\'/myImage.jpg\')']);
+			const css = filterTest(['url(\'/myImage.jpg\')']);
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
@@ -269,19 +270,19 @@ describe('Module', function(){
 			expect(css).to.contain('main h1 > p');
 			expect(css).to.contain('.test');
 			expect(css).to.not.contain('/myImage.jpg');
-		} catch (err) {
-			expect(err).to.not.exist();
+		} catch (error) {
+			expect(error).to.not.exist();
 		}
 	});
 
-	it('should remove declarations with function matcher', function () {
-		function filter(context,value,obj) {
+	it('should remove declarations with function matcher', () => {
+		function filter(context, value, obj) {
 			expect(obj).to.have.ownProperty('type');
 			return context === 'declarationValue' && /url/.test(value);
 		}
 
 		try {
-			var css = filterTest(filter);
+			const css = filterTest(filter);
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
@@ -289,14 +290,14 @@ describe('Module', function(){
 			expect(css).to.contain('main h1 > p');
 			expect(css).to.contain('.test');
 			expect(css).to.not.contain('/myImage.jpg');
-		} catch (err) {
-			expect(err).to.not.exist();
+		} catch (error) {
+			expect(error).to.not.exist();
 		}
 	});
 
-	it('should remove media if it matches string', function () {
+	it('should remove media if it matches string', () => {
 		try {
-			var css = filterTest(['only print']);
+			const css = filterTest(['only print']);
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
@@ -305,14 +306,14 @@ describe('Module', function(){
 			expect(css).to.contain('.test');
 			expect(css).to.contain('/myImage.jpg');
 			expect(css).to.not.contain('only print');
-		} catch (err) {
-			expect(err).to.not.exist();
+		} catch (error) {
+			expect(error).to.not.exist();
 		}
 	});
 
-	it('should remove media if it matches regexp', function () {
+	it('should remove media if it matches regexp', () => {
 		try {
-			var css = filterTest([/print/]);
+			const css = filterTest([/print/]);
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
@@ -321,19 +322,19 @@ describe('Module', function(){
 			expect(css).to.contain('.test');
 			expect(css).to.contain('/myImage.jpg');
 			expect(css).to.not.contain('only print');
-		} catch (err) {
-			expect(err).to.not.exist();
+		} catch (error) {
+			expect(error).to.not.exist();
 		}
 	});
 
-	it('should remove media with function matcher', function () {
-		function filter(context,value,obj) {
+	it('should remove media with function matcher', () => {
+		function filter(context, value, obj) {
 			expect(obj).to.have.ownProperty('type');
 			return context === 'media' && /print/.test(value);
 		}
 
 		try {
-			var css = filterTest([filter]);
+			const css = filterTest([filter]);
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
@@ -342,32 +343,39 @@ describe('Module', function(){
 			expect(css).to.contain('.test');
 			expect(css).to.contain('/myImage.jpg');
 			expect(css).to.not.contain('only print');
-		} catch (err) {
-			expect(err).to.not.exist();
+		} catch (error) {
+			expect(error).to.not.exist();
 		}
 	});
 });
 
-describe('CLI', function(){
-	// empty stdout on appveyor? runs correct on manual test with Windows 7
-	skipWin('should return the version', function (done) {
-		execFile('node', [path.join(__dirname, '../', pkg.bin.filtercss), '--version', '--no-update-notifier'], function(error, stdout){
-			expect(stdout.replace(/\r\n|\n/g, '')).to.eql(pkg.version);
-			done();
-		});
+describe('CLI', () => {
+	it('should return the version', done => {
+		execFile(
+			'node',
+			[filterCssBin, '--version'],
+			(error, stdout) => {
+				expect(stdout.trim()).to.equal(version);
+				done();
+			}
+		);
 	});
 
-	it('should work well with the target stylesheet file passed as an option', function (done) {
-		var cp = execFile('node', [
-			path.join(__dirname, '../', pkg.bin.filtercss),
-			'test/fixtures/test.css',
-			'--ignore', '/main/'
-		]);
+	it('should work well with the target stylesheet file passed as an option', done => {
+		const cp = execFile(
+			'node', [
+				filterCssBin,
+				testFile,
+				'--ignore',
+				'/main/'
+			]
+		);
 
-		cp.stdout.on('data', function (css) {
+		cp.stdout.on('data', css => {
 			if (css instanceof Buffer) {
 				css = css.toString('utf8');
 			}
+
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
@@ -376,17 +384,16 @@ describe('CLI', function(){
 			expect(css).to.contain('.test');
 			done();
 		});
-
 	});
 
-	// pipes don't work on windows
-	skipWin('should work well with the target stylesheet file piped to filtercss', function (done) {
-		var cp = exec('cat test/fixtures/test.css | node ' + path.join(__dirname, '../', pkg.bin.filtercss) + ' --ignore @font-face');
+	it('should work well with the target stylesheet file piped to filtercss', done => {
+		const cp = exec(`${CAT} ${path.normalize(testFile)} | node ${filterCssBin} --ignore @font-face`);
 
-		cp.stdout.on('data', function (css) {
+		cp.stdout.on('data', css => {
 			if (css instanceof Buffer) {
 				css = css.toString('utf8');
 			}
+
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.not.contain('font-face');
@@ -397,17 +404,21 @@ describe('CLI', function(){
 		});
 	});
 
-	it('should default filter options to true', function (done) {
-		var cp = execFile('node', [
-			path.join(__dirname, '../', pkg.bin.filtercss),
-			'test/fixtures/test.css',
-			'--ignore', '/.*/'
-		]);
+	it('should default filter options to true', done => {
+		const cp = execFile(
+			'node', [
+				filterCssBin,
+				testFile,
+				'--ignore',
+				'/.*/'
+			]
+		);
 
-		cp.stdout.on('data', function (css) {
+		cp.stdout.on('data', css => {
 			if (css instanceof Buffer) {
 				css = css.toString('utf8');
 			}
+
 			expect(css).to.not.contain('body');
 			expect(css).to.not.contain('html');
 			expect(css).to.not.contain('font-face');
@@ -416,20 +427,24 @@ describe('CLI', function(){
 			expect(css).to.not.contain('.test');
 			done();
 		});
-
 	});
 
-	it('should consider ignore options ', function (done) {
-		var cp = execFile('node', [
-			path.join(__dirname, '../', pkg.bin.filtercss),
-			'test/fixtures/test.css',
-			'--ignore', '/.*/','-STPVM'
-		]);
+	it('should consider ignore options ', done => {
+		const cp = execFile(
+			'node', [
+				filterCssBin,
+				testFile,
+				'--ignore',
+				'/.*/',
+				'-STPVM'
+			]
+		);
 
-		cp.stdout.on('data', function (css) {
+		cp.stdout.on('data', css => {
 			if (css instanceof Buffer) {
 				css = css.toString('utf8');
 			}
+
 			expect(css).to.contain('body');
 			expect(css).to.contain('html');
 			expect(css).to.contain('font-face');
@@ -438,6 +453,5 @@ describe('CLI', function(){
 			expect(css).to.contain('.test');
 			done();
 		});
-
 	});
 });
