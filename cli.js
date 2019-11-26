@@ -8,8 +8,6 @@ const isRegExp = require('lodash.isregexp');
 const stdin = require('get-stdin');
 const filterCss = require('.');
 
-let ok;
-
 const help = `
 Usage: filtercss <input> [<option>]
 
@@ -53,7 +51,10 @@ const cli = meow(
 );
 
 function go(data) {
-	ok = true;
+	if (!data) {
+		cli.showHelp();
+	}
+
 	if (isString(cli.flags.ignore) || isRegExp(cli.flags.ignore)) {
 		cli.flags.ignore = [cli.flags.ignore];
 	}
@@ -69,11 +70,6 @@ function go(data) {
 		return ignore;
 	});
 
-	if (!data) {
-		cli.showHelp();
-		return;
-	}
-
 	const diff = filterCss(data, ignores, {
 		matchSelectors: !cli.flags.skipSelectors,
 		matchTypes: !cli.flags.skipTypes,
@@ -83,21 +79,10 @@ function go(data) {
 	});
 
 	console.log(diff);
-	process.exit();
-}
-
-function die() {
-	if (ok) {
-		return;
-	}
-
-	cli.showHelp();
 }
 
 if (cli.input[0]) {
 	go(cli.input[0]);
 } else {
-	// get stdin
 	stdin().then(go);
-	setTimeout(die, 200);
 }
